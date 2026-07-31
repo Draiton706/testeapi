@@ -270,7 +270,27 @@
         </div>
 
     </div>
-
+<!-- Lançamento de Ranking pelo Usuário -->
+        <div class="bg-blue-50 p-4 rounded border mb-6">
+            <h3 class="text-xl font-semibold mb-2 text-blue-800">Lançar Minha Pontuação no Ranking</h3>
+            <form id="formAddScore" class="flex gap-4 items-end">
+                <div class="flex-1">
+                    <label class="block text-sm font-medium">Sua Faixa</label>
+                    <select id="scoreFaixa" class="w-full mt-1 p-2 border rounded">
+                        <option value="x">Faixa X (até 19.999M)</option>
+                        <option value="y">Faixa Y (20M ou mais)</option>
+                    </select>
+                </div>
+                <div class="flex-1">
+                    <label class="block text-sm font-medium">Pontuação do Dia</label>
+                    <input type="number" step="0.1" id="scoreValor" required class="w-full mt-1 p-2 border rounded" placeholder="Ex: 8.5">
+                </div>
+                <button type="submit" class="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700 h-[42px] flex items-center justify-center font-bold">
+                    <span id="scoreText">Enviar Pontos</span><span id="scoreLoader" class="loader hidden ml-2"></span>
+                </button>
+            </form>
+            <div id="scoreMsg" class="mt-3 text-sm hidden"></div>
+        </div>
     <script>
         // COLOQUE O SEU WEB APP AQUI
         const API_URL = "https://script.google.com/macros/s/AKfycbw7Zf9buedPdruP2o-S4YwF23zYqMMmfOsCvyvtZg2xwrWekuiOwdfgvTMNWNRjuDdy/exec"; 
@@ -320,6 +340,60 @@
             alert(res.message); if(res.success) switchView('viewLogin');
         });
 
+
+        // 8. Adicionar Pontuação do Usuário no Ranking
+function adicionarPontuacao(dados) {
+  try {
+    const planilhaGrupo = SpreadsheetApp.openById(dados.planilhaId);
+    
+    // 1. Salvar na aba de Histórico (Cria automaticamente se não existir)
+    let abaHistorico = planilhaGrupo.getSheetByName('Historico_Ranking');
+    if (!abaHistorico) {
+      abaHistorico = planilhaGrupo.insertSheet('Historico_Ranking');
+      abaHistorico.appendRow(['Data_Envio', 'Usuario', 'Faixa', 'Pontuação']);
+      abaHistorico.getRange("A1:D1").setFontWeight("bold");
+    }
+    abaHistorico.appendRow([new Date().toLocaleString('pt-BR'), dados.usuarioNome, dados.faixa, parseFloat(dados.pontuacao)]);
+
+    // 2. Atualizar o estado do Ranking JSON automaticamente
+    let abaState = planilhaGrupo.getSheetByName('Ranking_State');
+    if (!abaState) {
+      abaState = planilhaGrupo.insertSheet('Ranking_State');
+      abaState.hideSheet(); 
+      abaState.getRange('A1').setValue(JSON.stringify({ days: 1, x: [], y: [] }));
+    }
+    
+    let stateStr = abaState.getRange('A1').getValue();
+    let state = stateStr ? JSON.parse(stateStr) : { days: 1, x: [], y: [] };
+    
+    // Se o ranking estiver zerado, inicia o Dia 1
+    if(state.days === 0) state.days = 1; 
+    
+    const div = dados.faixa; // 'x' ou 'y'
+    let userIndex = state[div].findIndex(p => p.name === dados.usuarioNome);
+    
+    let pontos = parseFloat(dados.pontuacao);
+    if(pontos > 10) pontos = 10; // Limite de 10 pontos
+    
+    if (userIndex === -1) {
+      // Se o usuário não existir no ranking, cria ele com arrays vazios até o dia atual
+      let scores = Array(state.days).fill(null);
+      scores[state.days - 1] = pontos; // Lança a nota no último dia vigente
+      state[div].push({ name: dados.usuarioNome, scores: scores });
+    } else {
+      // Se já existir, apenas atualiza a nota do último dia vigente
+      state[div][userIndex].scores[state.days - 1] = pontos;
+    }
+    
+    // Salva o novo estado na planilha
+    abaState.getRange('A1').setValue(JSON.stringify(state));
+    
+    return { success: true, message: 'Pontuação registrada com sucesso no Ranking!' };
+  } catch(err) {
+    return { success: false, message: 'Erro ao processar pontuação: ' + err.toString() };
+  }
+}
+        
         // Nova função: Salvar a senha atualizada no painel
         async function salvarNovaSenha() {
             const novaSenha = document.getElementById('novaSenha').value;
