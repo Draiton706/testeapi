@@ -24,10 +24,11 @@
             transform: translateX(0);
         }
 
-        /* CONFIGURAÇÃO DE CORES DINÂMICAS (LIGHT & DARK AUTOMÁTICO) */
-        #ranking-app {
-            --bg: transparent; 
-            --panel: #f8fafc;
+        /* VARIÁVEIS GLOBAIS DE TEMA (LIGHT & DARK AUTOMÁTICO) */
+        :root {
+            --app-bg: #f1f5f9;
+            --surface: #ffffff;
+            --surface-alt: #f8fafc;
             --panel-2: #f1f5f9;
             --line: #e2e8f0;
             --text: #1e293b;
@@ -42,14 +43,15 @@
             --table-head: #f8fafc;
         }
 
-        /* SE O SISTEMA DO USUÁRIO ESTIVER EM MODO ESCURO */
         @media (prefers-color-scheme: dark) {
-            #ranking-app {
-                --panel: #1e293b; /* slate-800 */
-                --panel-2: #0f172a; /* slate-900 */
-                --line: #334155; /* slate-700 */
-                --text: #f1f5f9; /* slate-100 */
-                --muted: #94a3b8; /* slate-400 */
+            :root {
+                --app-bg: #0f172a; /* Fundo geral da página escuro */
+                --surface: #1e293b; /* Blocos e cartões escuros */
+                --surface-alt: #0f172a;
+                --panel-2: #0f172a;
+                --line: #334155;
+                --text: #f1f5f9;
+                --muted: #94a3b8;
                 --x-dim: #0369a1;
                 --y-dim: #92400e;
                 --input-bg: #0f172a;
@@ -57,9 +59,14 @@
             }
         }
 
-        #ranking-app {
-            background: var(--bg); color: var(--text);
+        body {
+            background-color: var(--app-bg) !important;
+            color: var(--text) !important;
             font-family: 'IBM Plex Mono', monospace;
+        }
+
+        #ranking-app {
+            background: transparent; color: var(--text);
             width: 100%; margin-top: 10px;
         }
         
@@ -70,15 +77,15 @@
         #ranking-app .status-line { margin-top: 8px; font-size: 11px; color: var(--muted); display: inline-flex; align-items: center; gap: 6px; }
         #ranking-app .status-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--x-color); display: inline-block; }
         
-        #ranking-app .panel { width: 100%; margin: 0 auto 20px; background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 18px 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+        #ranking-app .panel { width: 100%; margin: 0 auto 20px; background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 18px 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
         #ranking-app .panel.accent-x { border-top: 3px solid var(--x-color); }
         #ranking-app .panel.accent-y { border-top: 3px solid var(--y-color); }
         #ranking-app .panel-title { font-family: 'Oswald', sans-serif; font-weight: 600; text-transform: uppercase; font-size: 15px; display: flex; align-items: center; gap: 8px; color: var(--text); }
         #ranking-app .panel-title .day-tag { font-family: 'IBM Plex Mono', monospace; font-size: 11.5px; color: var(--muted); background: var(--panel-2); border: 1px solid var(--line); border-radius: 20px; padding: 2px 10px; }
         
         #ranking-app .launch-tabs { display: flex; gap: 6px; margin-bottom: 16px; }
-        #ranking-app .launch-tab { background: var(--panel-2); border: 1px solid var(--line); color: var(--muted); padding: 8px 14px; border-radius: 8px; font-weight: 600; cursor: pointer; transition: all 0.2s;}
-        #ranking-app .launch-tab.active { color: var(--x-color); border-color: var(--x-color); background: var(--panel); }
+        #ranking-app .launch-tab { background: var(--surface-alt); border: 1px solid var(--line); color: var(--muted); padding: 8px 14px; border-radius: 8px; font-weight: 600; cursor: pointer; transition: all 0.2s;}
+        #ranking-app .launch-tab.active { color: var(--x-color); border-color: var(--x-color); background: var(--surface); }
         #ranking-app .launch-columns { display: grid; grid-template-columns: 1fr 1fr; gap: 26px; }
         @media (max-width:760px){ #ranking-app .launch-columns{ grid-template-columns: 1fr; } }
         
@@ -99,8 +106,8 @@
         
         #ranking-app .board { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; width: 100%; margin: 0 auto 20px; }
         @media (max-width:880px){ #ranking-app .board{grid-template-columns:1fr;} }
-        #ranking-app .division { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.05);}
-        #ranking-app .division-head { padding: 14px 16px; display: flex; justify-content: space-between; border-bottom: 1px solid var(--line); background: var(--panel);}
+        #ranking-app .division { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.05);}
+        #ranking-app .division-head { padding: 14px 16px; display: flex; justify-content: space-between; border-bottom: 1px solid var(--line); background: var(--surface);}
         #ranking-app .division.x .division-head { border-top: 3px solid var(--x-color); }
         #ranking-app .division.y .division-head { border-top: 3px solid var(--y-color); }
         #ranking-app .division-title { font-family: 'Oswald', sans-serif; font-weight: 600; text-transform: uppercase; font-size: 15px; }
@@ -111,62 +118,65 @@
         #ranking-app table { border-collapse: collapse; width: 100%; font-size: 13px; }
         #ranking-app th, #ranking-app td { padding: 8px 10px; text-align: center; border-bottom: 1px solid var(--line); white-space: nowrap; }
         #ranking-app th { color: var(--muted); font-size: 11px; text-transform: uppercase; position: sticky; top: 0; background: var(--table-head); }
-        #ranking-app td.name { text-align: left; font-weight: 600; min-width: 110px; position: sticky; left: 34px; background: var(--panel); z-index: 2; box-shadow: 2px 0 4px rgba(0,0,0,0.05); }
-        #ranking-app td.rank { font-weight: 700; color: var(--muted); width: 34px; position: sticky; left: 0; background: var(--panel); z-index: 2; }
+        #ranking-app td.name { text-align: left; font-weight: 600; min-width: 110px; position: sticky; left: 34px; background: var(--surface); z-index: 2; box-shadow: 2px 0 4px rgba(0,0,0,0.05); }
+        #ranking-app td.rank { font-weight: 700; color: var(--muted); width: 34px; position: sticky; left: 0; background: var(--surface); z-index: 2; }
         #ranking-app input.score { width: 46px; background: var(--input-bg); border: 1px solid var(--line); border-radius: 5px; color: var(--text); text-align: center; padding: 4px 2px; font-weight: 500;}
         
-        #ranking-app button:not(.launch-submit) { background: var(--panel-2); color: var(--text); border: 1px solid var(--line); border-radius: 6px; padding: 7px 12px; cursor: pointer; font-weight: 500; font-size: 13px; transition: 0.2s;}
+        #ranking-app button:not(.launch-submit) { background: var(--surface-alt); color: var(--text); border: 1px solid var(--line); border-radius: 6px; padding: 7px 12px; cursor: pointer; font-weight: 500; font-size: 13px; transition: 0.2s;}
         #ranking-app button:hover { border-color: var(--x-color); color: var(--x-color); }
         #ranking-app button.danger:hover { border-color: var(--neg); color: var(--neg); }
         #ranking-app select { background: var(--input-bg); color: var(--text); border: 1px solid var(--line); padding: 6px 8px; border-radius: 5px; }
         #ranking-app .del-x-btn { background: none; border: none; padding: 0 4px; font-size: 14px; color: var(--muted);}
         #ranking-app .del-x-btn:hover { color: var(--neg); }
+
+        /* Classes de suporte dinâmico para containers externos */
+        .dynamic-card { background-color: var(--surface) !important; border-color: var(--line) !important; color: var(--text) !important; }
     </style>
 </head>
-<body class="bg-slate-100 min-h-screen font-sans text-slate-800">
+<body class="min-h-screen">
 
     <!-- NAVBAR -->
     <nav class="bg-blue-700 text-white shadow-md p-4 sticky top-0 z-40">
         <div class="max-w-7xl mx-auto flex justify-between items-center">
-            <h1 class="text-xl font-bold tracking-wide">AppManager</h1>
+            <h1 class="text-xl font-bold tracking-wide m-0">AppManager</h1>
             <div class="flex items-center gap-3">
-                <button id="btnOpenSidebar" onclick="toggleSidebar(true)" class="hidden bg-blue-600 hover:bg-blue-800 px-3.5 py-2 rounded text-sm font-bold transition flex items-center gap-2 border border-blue-500">
+                <button id="btnOpenSidebar" onclick="toggleSidebar(true)" class="hidden bg-blue-600 hover:bg-blue-800 px-3.5 py-2 rounded text-sm font-bold transition flex items-center gap-2 border border-blue-500 text-white">
                     ⚙️ Configurações & Grupo
                 </button>
-                <button id="btnLogout" class="hidden hover:bg-blue-800 px-3.5 py-2 rounded text-sm font-bold transition">Sair</button>
+                <button id="btnLogout" class="hidden hover:bg-blue-800 px-3.5 py-2 rounded text-sm font-bold transition text-white">Sair</button>
             </div>
         </div>
     </nav>
 
     <!-- SIDEBAR DE CONFIGURAÇÕES E PARTICIPANTES -->
-    <div id="settingsSidebar" class="fixed inset-y-0 right-0 w-full sm:w-96 bg-white shadow-2xl z-50 p-6 overflow-y-auto border-l border-slate-200">
-        <div class="flex justify-between items-center mb-6 border-b pb-4">
-            <h3 class="text-xl font-bold text-slate-800">Painel de Configuração</h3>
-            <button onclick="toggleSidebar(false)" class="text-slate-400 hover:text-slate-700 text-xl font-bold p-1">✕</button>
+    <div id="settingsSidebar" class="fixed inset-y-0 right-0 w-full sm:w-96 shadow-2xl z-50 p-6 overflow-y-auto border-l dynamic-card">
+        <div class="flex justify-between items-center mb-6 border-b border-slate-200 dark:border-slate-700 pb-4">
+            <h3 class="text-xl font-bold">Painel de Configuração</h3>
+            <button onclick="toggleSidebar(false)" class="text-slate-400 hover:text-slate-200 text-xl font-bold p-1 border-0 bg-transparent">✕</button>
         </div>
 
         <div class="space-y-6">
             <!-- Conta do Usuário -->
-            <div class="bg-slate-50 p-4 rounded-xl border border-slate-200">
-                <h4 class="font-bold text-slate-700 text-sm mb-3 uppercase tracking-wider">Segurança da Conta</h4>
-                <p class="text-xs text-slate-500 mb-3">Atualize sua senha de acesso ao sistema.</p>
-                <input type="password" id="novaSenhaSidebar" placeholder="Nova senha (min. 6 caracteres)" class="w-full p-2.5 border border-slate-300 rounded-lg mb-3 text-sm focus:ring-2 focus:ring-blue-500 outline-none" minlength="6">
-                <button onclick="salvarNovaSenhaSidebar()" class="w-full py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-bold transition flex justify-center items-center shadow-sm">
+            <div class="p-4 rounded-xl border border-slate-200 dark:border-slate-700" style="background:var(--surface-alt)">
+                <h4 class="font-bold text-sm mb-3 uppercase tracking-wider">Segurança da Conta</h4>
+                <p class="text-xs text-slate-400 mb-3">Atualize sua senha de acesso ao sistema.</p>
+                <input type="password" id="novaSenhaSidebar" placeholder="Nova senha (min. 6 caracteres)" class="w-full p-2.5 border border-slate-300 dark:border-slate-700 rounded-lg mb-3 text-sm outline-none" style="background:var(--input-bg); color:var(--text);" minlength="6">
+                <button onclick="salvarNovaSenhaSidebar()" class="w-full py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-bold transition flex justify-center items-center shadow-sm border-0">
                     <span id="txtBtnSenhaSidebar">Alterar Senha</span><span id="loadBtnSenhaSidebar" class="loader hidden ml-2" style="width:14px;height:14px;border-width:2px;"></span>
                 </button>
             </div>
 
             <!-- Organização de Participantes / Grupo -->
-            <div class="bg-slate-50 p-4 rounded-xl border border-slate-200">
-                <h4 class="font-bold text-slate-700 text-sm mb-2 uppercase tracking-wider">Organização do Grupo</h4>
-                <p class="text-xs text-slate-500 mb-4">Gerencie os links estruturais e a planilha integrada.</p>
+            <div class="p-4 rounded-xl border border-slate-200 dark:border-slate-700" style="background:var(--surface-alt)">
+                <h4 class="font-bold text-sm mb-2 uppercase tracking-wider">Organização do Grupo</h4>
+                <p class="text-xs text-slate-400 mb-4">Gerencie os links estruturais e a planilha integrada.</p>
                 
                 <div class="mb-3">
-                    <label class="block text-xs font-bold text-slate-600 mb-1">Nome do Grupo</label>
-                    <input type="text" id="sidebarGrupoNome" class="w-full p-2.5 border border-slate-300 rounded-lg text-sm bg-white" readonly>
+                    <label class="block text-xs font-bold mb-1">Nome do Grupo</label>
+                    <input type="text" id="sidebarGrupoNome" class="w-full p-2.5 border border-slate-300 dark:border-slate-700 rounded-lg text-sm" style="background:var(--input-bg); color:var(--text);" readonly>
                 </div>
                 <div>
-                    <label class="block text-xs font-bold text-slate-600 mb-1">Planilha de Destino</label>
+                    <label class="block text-xs font-bold mb-1">Planilha de Destino</label>
                     <a id="sidebarLinkPlanilha" href="#" target="_blank" class="block w-full text-center bg-indigo-600 hover:bg-indigo-700 text-white py-2.5 rounded-lg text-sm font-bold transition shadow-sm">
                         🔗 Abrir no Google Sheets
                     </a>
@@ -174,68 +184,68 @@
             </div>
 
             <!-- Gestão Rápida de Participantes -->
-            <div class="bg-slate-50 p-4 rounded-xl border border-slate-200">
-                <h4 class="font-bold text-slate-700 text-sm mb-2 uppercase tracking-wider">Adicionar Participantes</h4>
-                <p class="text-xs text-slate-500 mb-3">Insira rapidamente novos nomes direto nas faixas.</p>
+            <div class="p-4 rounded-xl border border-slate-200 dark:border-slate-700" style="background:var(--surface-alt)">
+                <h4 class="font-bold text-sm mb-2 uppercase tracking-wider">Adicionar Participantes</h4>
+                <p class="text-xs text-slate-400 mb-3">Insira rapidamente novos nomes direto nas faixas.</p>
                 <div class="flex gap-2">
-                    <button onclick="addParticipant('x')" class="flex-1 py-2 bg-white border border-slate-300 rounded-lg text-sm font-bold hover:border-sky-500 hover:text-sky-600">+ Faixa X</button>
-                    <button onclick="addParticipant('y')" class="flex-1 py-2 bg-white border border-slate-300 rounded-lg text-sm font-bold hover:border-amber-500 hover:text-amber-600">+ Faixa Y</button>
+                    <button onclick="addParticipant('x')" class="flex-1 py-2 rounded-lg text-sm font-bold"> + Faixa X</button>
+                    <button onclick="addParticipant('y')" class="flex-1 py-2 rounded-lg text-sm font-bold"> + Faixa Y</button>
                 </div>
             </div>
         </div>
     </div>
     <!-- Overlay da Sidebar -->
-    <div id="sidebarOverlay" onclick="toggleSidebar(false)" class="hidden fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-40"></div>
+    <div id="sidebarOverlay" onclick="toggleSidebar(false)" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-40"></div>
 
     <!-- VIEWS DE AUTENTICAÇÃO -->
-    <div class="max-w-md mx-auto mt-16 p-8 bg-white rounded-xl shadow-lg border border-slate-200" id="mainContainer">
+    <div class="max-w-md mx-auto mt-16 p-8 rounded-xl shadow-lg border border-slate-200 dark:border-slate-700 dynamic-card" id="mainContainer">
         <!-- LOGIN -->
         <div id="viewLogin">
-            <h2 class="text-2xl font-bold mb-6 text-center text-slate-800">Acessar Conta</h2>
+            <h2 class="text-2xl font-bold mb-6 text-center">Acessar Conta</h2>
             <form id="formLogin" class="space-y-4">
                 <div>
-                    <label class="block text-sm font-medium text-slate-600">E-mail</label>
-                    <input type="email" id="loginEmail" required class="w-full mt-1 p-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
+                    <label class="block text-sm font-medium">E-mail</label>
+                    <input type="email" id="loginEmail" required class="w-full mt-1 p-2.5 border border-slate-300 dark:border-slate-700 rounded-lg outline-none" style="background:var(--input-bg); color:var(--text);">
                 </div>
                 <div>
-                    <label class="block text-sm font-medium text-slate-600">Senha</label>
-                    <input type="password" id="loginSenha" required class="w-full mt-1 p-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
+                    <label class="block text-sm font-medium">Senha</label>
+                    <input type="password" id="loginSenha" required class="w-full mt-1 p-2.5 border border-slate-300 dark:border-slate-700 rounded-lg outline-none" style="background:var(--input-bg); color:var(--text);">
                 </div>
-                <button type="submit" class="w-full bg-blue-600 text-white p-2.5 rounded-lg hover:bg-blue-700 font-bold transition flex justify-center items-center">
+                <button type="submit" class="w-full bg-blue-600 text-white p-2.5 rounded-lg hover:bg-blue-700 font-bold transition flex justify-center items-center border-0 cursor-pointer">
                     <span id="loginText">Entrar</span><span id="loginLoader" class="loader hidden ml-2"></span>
                 </button>
             </form>
             <div class="mt-6 flex justify-between text-sm">
-                <a href="#" onclick="switchView('viewRecover')" class="text-blue-600 hover:underline">Esqueceu a senha?</a>
-                <a href="#" onclick="switchView('viewRegister')" class="text-blue-600 hover:underline font-semibold">Criar nova conta</a>
+                <a href="#" onclick="switchView('viewRecover')" class="text-blue-500 hover:underline">Esqueceu a senha?</a>
+                <a href="#" onclick="switchView('viewRegister')" class="text-blue-500 hover:underline font-semibold">Criar nova conta</a>
             </div>
         </div>
 
         <!-- CADASTRO -->
         <div id="viewRegister" class="hidden">
-            <h2 class="text-2xl font-bold mb-6 text-center text-slate-800">Criar Nova Conta</h2>
+            <h2 class="text-2xl font-bold mb-6 text-center">Criar Nova Conta</h2>
             <form id="formRegister" class="space-y-4">
-                <div><label class="block text-sm font-medium text-slate-600">Nome Completo</label><input type="text" id="regNome" required class="w-full mt-1 p-2.5 border border-slate-300 rounded-lg"></div>
-                <div><label class="block text-sm font-medium text-slate-600">Nome do Grupo</label><input type="text" id="regGrupo" required class="w-full mt-1 p-2.5 border border-slate-300 rounded-lg"></div>
-                <div><label class="block text-sm font-medium text-slate-600">E-mail</label><input type="email" id="regEmail" required class="w-full mt-1 p-2.5 border border-slate-300 rounded-lg"></div>
-                <div><label class="block text-sm font-medium text-slate-600">Senha</label><input type="password" id="regSenha" required minlength="6" class="w-full mt-1 p-2.5 border border-slate-300 rounded-lg"></div>
-                <button type="submit" class="w-full bg-emerald-600 text-white p-2.5 rounded-lg hover:bg-emerald-700 font-bold transition flex justify-center items-center">
+                <div><label class="block text-sm font-medium">Nome Completo</label><input type="text" id="regNome" required class="w-full mt-1 p-2.5 border border-slate-300 dark:border-slate-700 rounded-lg" style="background:var(--input-bg); color:var(--text);"></div>
+                <div><label class="block text-sm font-medium">Nome do Grupo</label><input type="text" id="regGrupo" required class="w-full mt-1 p-2.5 border border-slate-300 dark:border-slate-700 rounded-lg" style="background:var(--input-bg); color:var(--text);"></div>
+                <div><label class="block text-sm font-medium">E-mail</label><input type="email" id="regEmail" required class="w-full mt-1 p-2.5 border border-slate-300 dark:border-slate-700 rounded-lg" style="background:var(--input-bg); color:var(--text);"></div>
+                <div><label class="block text-sm font-medium">Senha</label><input type="password" id="regSenha" required minlength="6" class="w-full mt-1 p-2.5 border border-slate-300 dark:border-slate-700 rounded-lg" style="background:var(--input-bg); color:var(--text);"></div>
+                <button type="submit" class="w-full bg-emerald-600 text-white p-2.5 rounded-lg hover:bg-emerald-700 font-bold transition flex justify-center items-center border-0 cursor-pointer">
                     <span id="regText">Cadastrar</span><span id="regLoader" class="loader hidden ml-2"></span>
                 </button>
             </form>
-            <div class="mt-6 text-sm text-center"><a href="#" onclick="switchView('viewLogin')" class="text-blue-600 hover:underline">Voltar ao Login</a></div>
+            <div class="mt-6 text-sm text-center"><a href="#" onclick="switchView('viewLogin')" class="text-blue-500 hover:underline">Voltar ao Login</a></div>
         </div>
 
         <!-- RECUPERAÇÃO -->
         <div id="viewRecover" class="hidden">
-            <h2 class="text-2xl font-bold mb-6 text-center text-slate-800">Recuperar Senha</h2>
+            <h2 class="text-2xl font-bold mb-6 text-center">Recuperar Senha</h2>
             <form id="formRecover" class="space-y-4">
-                <div><label class="block text-sm font-medium text-slate-600">E-mail cadastrado</label><input type="email" id="recEmail" required class="w-full mt-1 p-2.5 border border-slate-300 rounded-lg"></div>
-                <button type="submit" class="w-full bg-amber-500 text-white p-2.5 rounded-lg hover:bg-amber-600 font-bold transition flex justify-center items-center">
+                <div><label class="block text-sm font-medium">E-mail cadastrado</label><input type="email" id="recEmail" required class="w-full mt-1 p-2.5 border border-slate-300 dark:border-slate-700 rounded-lg" style="background:var(--input-bg); color:var(--text);"></div>
+                <button type="submit" class="w-full bg-amber-500 text-white p-2.5 rounded-lg hover:bg-amber-600 font-bold transition flex justify-center items-center border-0 cursor-pointer">
                     <span id="recText">Enviar Senha</span><span id="recLoader" class="loader hidden ml-2"></span>
                 </button>
             </form>
-            <div class="mt-6 text-sm text-center"><a href="#" onclick="switchView('viewLogin')" class="text-blue-600 hover:underline">Voltar</a></div>
+            <div class="mt-6 text-sm text-center"><a href="#" onclick="switchView('viewLogin')" class="text-blue-500 hover:underline">Voltar</a></div>
         </div>
     </div>
 
@@ -243,12 +253,12 @@
     <div id="viewDashboard" class="hidden max-w-7xl mx-auto mt-8 mb-12 px-4">
         
         <!-- Cabeçalho Limpo de Boas-Vindas -->
-        <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200 mb-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+        <div class="p-6 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 mb-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 dynamic-card">
             <div>
-                <h2 class="text-3xl font-bold text-slate-800">Olá, <span id="dashNome" class="text-blue-600"></span></h2>
-                <p class="text-slate-500 mt-1 text-sm font-medium">Painel Operacional · Grupo: <span id="dashGrupo" class="text-slate-700"></span></p>
+                <h2 class="text-3xl font-bold">Olá, <span id="dashNome" class="text-blue-500"></span></h2>
+                <p class="mt-1 text-sm font-medium opacity-80">Painel Operacional · Grupo: <span id="dashGrupo"></span></p>
             </div>
-            <div class="text-xs bg-blue-50 text-blue-700 px-3 py-2 rounded-lg font-semibold border border-blue-100">
+            <div class="text-xs bg-blue-500/10 text-blue-500 px-3 py-2 rounded-lg font-semibold border border-blue-500/20">
                 💡 Dica: Todos os lançamentos e edições de notas são feitos diretamente na tabela de Classificação abaixo.
             </div>
         </div>
@@ -266,13 +276,13 @@
                 <div class="division x" id="div-x">
                     <div class="division-head"><div><div class="division-title">Faixa X</div></div></div>
                     <div class="table-wrap"><table><thead><tr id="head-x"></tr></thead><tbody id="body-x"></tbody></table></div>
-                    <div style="padding:12px; background: #f8fafc; border-top: 1px solid var(--line);"><button onclick="addParticipant('x')">+ Participante</button></div>
+                    <div style="padding:12px; background: var(--surface); border-top: 1px solid var(--line);"><button onclick="addParticipant('x')">+ Participante</button></div>
                 </div>
 
                 <div class="division y" id="div-y">
                     <div class="division-head"><div><div class="division-title">Faixa Y</div></div></div>
                     <div class="table-wrap"><table><thead><tr id="head-y"></tr></thead><tbody id="body-y"></tbody></table></div>
-                    <div style="padding:12px; background: #f8fafc; border-top: 1px solid var(--line);"><button onclick="addParticipant('y')">+ Participante</button></div>
+                    <div style="padding:12px; background: var(--surface); border-top: 1px solid var(--line);"><button onclick="addParticipant('y')">+ Participante</button></div>
                 </div>
             </div>
 
@@ -289,13 +299,13 @@
                     <div id="launch-view-form">
                         <div class="launch-columns">
                             <div class="launch-col x">
-                                <div class="launch-col-head"><span class="launch-col-title">Faixa X</span><span class="launch-col-count text-xs font-bold text-slate-400" id="launch-count-x"></span></div>
+                                <div class="launch-col-head"><span class="launch-col-title">Faixa X</span><span class="launch-col-count text-xs font-bold opacity-60" id="launch-count-x"></span></div>
                                 <div class="launch-list" id="launch-list-x"></div>
                                 <div id="launch-new-x"></div>
                                 <div style="margin-top:10px"><button type="button" onclick="addDraftRow('x')" style="width:100%; border-style:dashed;">+ novo</button></div>
                             </div>
                             <div class="launch-col y">
-                                <div class="launch-col-head"><span class="launch-col-title">Faixa Y</span><span class="launch-col-count text-xs font-bold text-slate-400" id="launch-count-y"></span></div>
+                                <div class="launch-col-head"><span class="launch-col-title">Faixa Y</span><span class="launch-col-count text-xs font-bold opacity-60" id="launch-count-y"></span></div>
                                 <div class="launch-list" id="launch-list-y"></div>
                                 <div id="launch-new-y"></div>
                                 <div style="margin-top:10px"><button type="button" onclick="addDraftRow('y')" style="width:100%; border-style:dashed;">+ novo</button></div>
@@ -331,13 +341,13 @@
                         <div style="display:flex; gap:8px; margin-bottom:12px;">
                             <select id="summary-day" onchange="generateSummary()" class="flex-1"></select>
                             <button onclick="generateSummary()">Gerar</button>
-                            <button onclick="copySummary()" id="copy-btn" style="background:#0f172a; color:white; border:none;">Copiar</button>
+                            <button onclick="copySummary()" id="copy-btn" style="background:var(--text); color:var(--surface); border:none;">Copiar</button>
                         </div>
                         <textarea id="summary-output" readonly placeholder="O texto pronto para WhatsApp aparecerá aqui..." style="font-size:12px; height:120px;"></textarea>
                     </div>
 
-                    <div class="panel border border-slate-200" style="margin-bottom:0; background: #ffffff;">
-                        <div class="panel-title mb-4 text-slate-500">Controles do Banco de Dados</div>
+                    <div class="panel border border-slate-200 dark:border-slate-700" style="margin-bottom:0;">
+                        <div class="panel-title mb-4 opacity-70">Controles do Banco de Dados</div>
                         <div class="grid grid-cols-2 gap-3">
                             <button onclick="addDay()">+ Dia Branco</button>
                             <button onclick="removeLastDay()">− Último dia</button>
@@ -546,7 +556,7 @@
             for(let d=state.days-1; d>=0; d--) sel.innerHTML += `<option value="${d}">Substituir Dia ${d+1}</option>`;
             renderPending();
         }
-        function renderPending(){ document.getElementById('pending-list').innerHTML = pendingImport.map((e,i)=>`<div style="display:flex; justify-content:space-between; align-items:center; background:#ffffff; padding:6px; border:1px solid var(--line); border-radius:4px;"><span class="font-bold">${e.name} <span class="text-emerald-600">(${e.value} pts)</span></span><select onchange="pendingImport[${i}].div=this.value" class="text-xs p-1 border"><option value="x" ${e.div==='x'?'selected':''}>Faixa X</option><option value="y" ${e.div==='y'?'selected':''}>Faixa Y</option></select></div>`).join(''); }
+        function renderPending(){ document.getElementById('pending-list').innerHTML = pendingImport.map((e,i)=>`<div style="display:flex; justify-content:space-between; align-items:center; background:var(--surface); padding:6px; border:1px solid var(--line); border-radius:4px;"><span class="font-bold">${e.name} <span class="text-emerald-500">(${e.value} pts)</span></span><select onchange="pendingImport[${i}].div=this.value" class="text-xs p-1 border"><option value="x" ${e.div==='x'?'selected':''}>Faixa X</option><option value="y" ${e.div==='y'?'selected':''}>Faixa Y</option></select></div>`).join(''); }
         function applyBulkDiv(v){ if(v) {pendingImport.forEach(e=>e.div=v); renderPending();} }
         function cancelImport(){ document.getElementById('pending-panel').style.display='none'; }
         function confirmImport(){
