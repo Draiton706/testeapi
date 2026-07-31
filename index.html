@@ -439,8 +439,19 @@
         });
 
         window.onload = () => {
-            const user = localStorage.getItem('sessionUser'); const group = localStorage.getItem('sessionGroup');
-            if (user && group) showDashboard(JSON.parse(user), JSON.parse(group)); else switchView('viewLogin');
+            const user = localStorage.getItem('sessionUser'); 
+            const group = localStorage.getItem('sessionGroup');
+            if (user && group && user !== "undefined" && group !== "undefined") {
+                try {
+                    showDashboard(JSON.parse(user), JSON.parse(group));
+                } catch(e) {
+                    localStorage.clear();
+                    switchView('viewLogin');
+                }
+            } else {
+                localStorage.clear();
+                switchView('viewLogin');
+            }
         };
 
         function showDashboard(user, group) {
