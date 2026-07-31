@@ -3,51 +3,115 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sistema Multi-Tenant Web</title>
+    <title>AppManager + Ranking Integrado</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    
     <style>
-        /* CSS para loading spinner */
+        /* Loading Spinner */
         .loader {
-            border: 4px solid #f3f3f3;
-            border-top: 4px solid #3498db;
-            border-radius: 50%;
-            width: 24px;
-            height: 24px;
-            animation: spin 1s linear infinite;
-            display: inline-block;
-            vertical-align: middle;
+            border: 4px solid #f3f3f3; border-top: 4px solid #3498db;
+            border-radius: 50%; width: 24px; height: 24px;
+            animation: spin 1s linear infinite; display: inline-block; vertical-align: middle;
         }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
         .hidden { display: none !important; }
+
+        /* ====================================================================
+           ESTILOS DO RANKING (Escopados para o #ranking-app)
+           ==================================================================== */
+        #ranking-app {
+            --bg: #12161d; --panel: #1a2029; --panel-2: #212938; --panel-3: #262f40;
+            --line: #2a3242; --text: #e7ecf2; --muted: #8892a3;
+            --x-color: #2fd8a8; --x-dim: #1a4a3f;
+            --y-color: #f5a83c; --y-dim: #4a3a1a;
+            --neg: #ef5f6f; --pos: #2fd8a8;
+
+            background: var(--bg); color: var(--text);
+            font-family: 'IBM Plex Mono', monospace;
+            padding: 24px 16px 60px; border-radius: 12px; margin-top: 30px;
+        }
+        #ranking-app :focus-visible { outline: 2px solid var(--x-color); outline-offset: 2px; }
+        #ranking-app .top { max-width: 1200px; margin: 0 auto 22px; text-align: center; }
+        #ranking-app h1 { font-family: 'Oswald', sans-serif; font-weight: 700; text-transform: uppercase; font-size: clamp(22px,5vw,34px); margin: 0 0 4px; }
+        #ranking-app .subtitle { color: var(--muted); font-size: 12.5px; }
+        #ranking-app .status-line { margin-top: 8px; font-size: 11px; color: var(--muted); display: inline-flex; align-items: center; gap: 6px; }
+        #ranking-app .status-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--x-color); display: inline-block; }
+        
+        #ranking-app .panel { max-width: 1200px; margin: 0 auto 20px; background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 18px 20px; }
+        #ranking-app .panel.accent-x { border-top: 3px solid var(--x-color); }
+        #ranking-app .panel.accent-y { border-top: 3px solid var(--y-color); }
+        #ranking-app .panel-title { font-family: 'Oswald', sans-serif; font-weight: 600; text-transform: uppercase; font-size: 14.5px; display: flex; align-items: center; gap: 8px; }
+        #ranking-app .panel-title .day-tag { font-family: 'IBM Plex Mono', monospace; font-size: 11.5px; color: var(--muted); background: var(--panel-2); border: 1px solid var(--line); border-radius: 20px; padding: 2px 10px; }
+        #ranking-app .panel-hint { color: var(--muted); font-size: 11.5px; margin-bottom: 14px; }
+        
+        #ranking-app .launch-tabs { display: flex; gap: 6px; margin-bottom: 16px; }
+        #ranking-app .launch-tab { background: var(--panel-2); border: 1px solid var(--line); color: var(--muted); padding: 8px 14px; border-radius: 8px; font-weight: 600; cursor: pointer; }
+        #ranking-app .launch-tab.active { color: var(--text); border-color: var(--x-color); background: rgba(47,216,168,0.10); }
+        #ranking-app .launch-columns { display: grid; grid-template-columns: 1fr 1fr; gap: 26px; }
+        @media (max-width:760px){ #ranking-app .launch-columns{ grid-template-columns: 1fr; } }
+        #ranking-app .launch-col-head { display: flex; justify-content: space-between; border-bottom: 1px solid var(--line); padding-bottom: 8px; }
+        #ranking-app .launch-col-title { font-family: 'Oswald', sans-serif; font-weight: 600; text-transform: uppercase; font-size: 12.5px; }
+        #ranking-app .launch-col.x .launch-col-title { color: var(--x-color); }
+        #ranking-app .launch-col.y .launch-col-title { color: var(--y-color); }
+        
+        #ranking-app .launch-row { display: flex; align-items: center; gap: 10px; padding: 7px 0; border-bottom: 1px solid var(--line); font-size: 12.5px; }
+        #ranking-app .launch-input { width: 66px; background: var(--panel-2); border: 1px solid var(--line); border-radius: 6px; color: var(--text); text-align: center; padding: 7px 4px; }
+        #ranking-app .launch-input.val-pos { color: var(--pos); border-color: var(--x-dim); }
+        #ranking-app .launch-input.val-neg { color: var(--neg); border-color: #4a2229; }
+        
+        #ranking-app .launch-name-input { flex: 1; background: var(--panel-2); border: 1px dashed var(--line); border-radius: 6px; color: var(--text); padding: 7px 9px; }
+        #ranking-app .launch-submit { background: var(--x-color); color: #0b1310; font-weight: 700; padding: 10px 22px; border-radius: 8px; cursor: pointer; }
+        #ranking-app textarea { background: var(--panel-2); border: 1px solid var(--line); border-radius: 6px; color: var(--text); padding: 10px; width: 100%; min-height: 100px; }
+        
+        #ranking-app .board { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; max-width: 1200px; margin: 0 auto 20px; }
+        @media (max-width:880px){ #ranking-app .board{grid-template-columns:1fr;} }
+        #ranking-app .division { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; overflow: hidden; }
+        #ranking-app .division-head { padding: 14px 16px; display: flex; justify-content: space-between; border-bottom: 1px solid var(--line); }
+        #ranking-app .division.x .division-head { border-top: 3px solid var(--x-color); }
+        #ranking-app .division.y .division-head { border-top: 3px solid var(--y-color); }
+        #ranking-app .division-title { font-family: 'Oswald', sans-serif; font-weight: 600; text-transform: uppercase; font-size: 15px; }
+        #ranking-app .division.x .division-title { color: var(--x-color); }
+        #ranking-app .division.y .division-title { color: var(--y-color); }
+        
+        #ranking-app .table-wrap { overflow-x: auto; cursor: grab; }
+        #ranking-app table { border-collapse: collapse; width: 100%; font-size: 12.5px; }
+        #ranking-app th, #ranking-app td { padding: 8px 10px; text-align: center; border-bottom: 1px solid var(--line); white-space: nowrap; }
+        #ranking-app th { color: var(--muted); font-size: 10.5px; text-transform: uppercase; position: sticky; top: 0; background: var(--panel); }
+        #ranking-app td.name { text-align: left; font-weight: 600; min-width: 110px; position: sticky; left: 34px; background: var(--panel); z-index: 2; box-shadow: 2px 0 4px rgba(0,0,0,0.35); }
+        #ranking-app td.rank { font-weight: 700; color: var(--muted); width: 34px; position: sticky; left: 0; background: var(--panel); z-index: 2; }
+        #ranking-app input.score { width: 46px; background: var(--panel-2); border: 1px solid var(--line); border-radius: 5px; color: var(--text); text-align: center; padding: 4px 2px; }
+        
+        #ranking-app button:not(.launch-submit) { background: var(--panel-2); color: var(--text); border: 1px solid var(--line); border-radius: 6px; padding: 7px 12px; cursor: pointer; }
+        #ranking-app button:hover { border-color: var(--x-color); }
+        #ranking-app button.danger:hover { border-color: var(--neg); }
+        #ranking-app select { background: var(--panel-2); color: var(--text); border: 1px solid var(--line); padding: 6px 8px; border-radius: 5px; }
+        #ranking-app .del-x-btn { background: none; border: none; padding: 0 4px; font-size: 14px; }
     </style>
 </head>
 <body class="bg-gray-100 min-h-screen font-sans text-gray-800">
 
     <!-- Navbar -->
     <nav class="bg-blue-600 text-white shadow-lg p-4">
-        <div class="max-w-6xl mx-auto flex justify-between items-center">
+        <div class="max-w-7xl mx-auto flex justify-between items-center">
             <h1 class="text-xl font-bold">AppManager</h1>
-            <button id="btnLogout" class="hidden hover:bg-blue-700 px-4 py-2 rounded">Sair</button>
+            <button id="btnLogout" class="hidden hover:bg-blue-700 px-4 py-2 rounded font-bold">Sair</button>
         </div>
     </nav>
 
+    <!-- VIEWS DE AUTENTICAÇÃO (Login / Cadastro / Recuperar) -->
     <div class="max-w-md mx-auto mt-10 p-6 bg-white rounded-lg shadow-md" id="mainContainer">
         
-        <!-- TELA DE LOGIN -->
+        <!-- LOGIN -->
         <div id="viewLogin">
             <h2 class="text-2xl font-bold mb-6 text-center text-gray-700">Entrar no Sistema</h2>
             <form id="formLogin" class="space-y-4">
-                <div>
-                    <label class="block text-sm font-medium">E-mail</label>
-                    <input type="email" id="loginEmail" required class="w-full mt-1 p-2 border rounded focus:ring focus:ring-blue-200">
-                </div>
-                <div>
-                    <label class="block text-sm font-medium">Senha</label>
-                    <input type="password" id="loginSenha" required class="w-full mt-1 p-2 border rounded focus:ring focus:ring-blue-200">
-                </div>
+                <div><label class="block text-sm font-medium">E-mail</label>
+                    <input type="email" id="loginEmail" required class="w-full mt-1 p-2 border rounded focus:ring focus:ring-blue-200"></div>
+                <div><label class="block text-sm font-medium">Senha</label>
+                    <input type="password" id="loginSenha" required class="w-full mt-1 p-2 border rounded focus:ring focus:ring-blue-200"></div>
                 <button type="submit" class="w-full bg-blue-600 text-white p-2 rounded hover:bg-blue-700 flex justify-center">
-                    <span id="loginText">Entrar</span>
-                    <span id="loginLoader" class="loader hidden ml-2"></span>
+                    <span id="loginText">Entrar</span><span id="loginLoader" class="loader hidden ml-2"></span>
                 </button>
             </form>
             <div class="mt-4 text-sm text-center">
@@ -56,247 +120,480 @@
             </div>
         </div>
 
-        <!-- TELA DE CADASTRO -->
+        <!-- CADASTRO -->
         <div id="viewRegister" class="hidden">
             <h2 class="text-2xl font-bold mb-6 text-center text-gray-700">Criar Nova Conta</h2>
             <form id="formRegister" class="space-y-4">
-                <div>
-                    <label class="block text-sm font-medium">Nome Completo</label>
-                    <input type="text" id="regNome" required class="w-full mt-1 p-2 border rounded">
-                </div>
-                <div>
-                    <label class="block text-sm font-medium">Nome do Grupo/Empresa</label>
-                    <input type="text" id="regGrupo" required class="w-full mt-1 p-2 border rounded">
-                </div>
-                <div>
-                    <label class="block text-sm font-medium">E-mail</label>
-                    <input type="email" id="regEmail" required class="w-full mt-1 p-2 border rounded">
-                </div>
-                <div>
-                    <label class="block text-sm font-medium">Senha</label>
-                    <input type="password" id="regSenha" required minlength="6" class="w-full mt-1 p-2 border rounded">
-                </div>
+                <div><label class="block text-sm font-medium">Nome</label><input type="text" id="regNome" required class="w-full mt-1 p-2 border rounded"></div>
+                <div><label class="block text-sm font-medium">Grupo</label><input type="text" id="regGrupo" required class="w-full mt-1 p-2 border rounded"></div>
+                <div><label class="block text-sm font-medium">E-mail</label><input type="email" id="regEmail" required class="w-full mt-1 p-2 border rounded"></div>
+                <div><label class="block text-sm font-medium">Senha</label><input type="password" id="regSenha" required minlength="6" class="w-full mt-1 p-2 border rounded"></div>
                 <button type="submit" class="w-full bg-green-600 text-white p-2 rounded hover:bg-green-700 flex justify-center">
-                    <span id="regText">Cadastrar</span>
-                    <span id="regLoader" class="loader hidden ml-2"></span>
+                    <span id="regText">Cadastrar</span><span id="regLoader" class="loader hidden ml-2"></span>
                 </button>
             </form>
-            <div class="mt-4 text-sm text-center">
-                <a href="#" onclick="switchView('viewLogin')" class="text-blue-500 hover:underline">Já tenho uma conta</a>
-            </div>
+            <div class="mt-4 text-sm text-center"><a href="#" onclick="switchView('viewLogin')" class="text-blue-500 hover:underline">Voltar ao Login</a></div>
         </div>
 
-        <!-- TELA DE RECUPERAÇÃO -->
+        <!-- RECUPERAÇÃO -->
         <div id="viewRecover" class="hidden">
             <h2 class="text-2xl font-bold mb-6 text-center text-gray-700">Recuperar Senha</h2>
-            <p class="text-sm text-gray-500 mb-4">Enviaremos uma senha temporária para o seu e-mail.</p>
             <form id="formRecover" class="space-y-4">
-                <div>
-                    <label class="block text-sm font-medium">E-mail Cadastrado</label>
-                    <input type="email" id="recEmail" required class="w-full mt-1 p-2 border rounded">
-                </div>
+                <div><label class="block text-sm font-medium">E-mail</label><input type="email" id="recEmail" required class="w-full mt-1 p-2 border rounded"></div>
                 <button type="submit" class="w-full bg-yellow-500 text-white p-2 rounded hover:bg-yellow-600 flex justify-center">
-                    <span id="recText">Enviar E-mail</span>
-                    <span id="recLoader" class="loader hidden ml-2"></span>
+                    <span id="recText">Enviar</span><span id="recLoader" class="loader hidden ml-2"></span>
                 </button>
             </form>
-            <div class="mt-4 text-sm text-center">
-                <a href="#" onclick="switchView('viewLogin')" class="text-blue-500 hover:underline">Voltar ao Login</a>
-            </div>
+            <div class="mt-4 text-sm text-center"><a href="#" onclick="switchView('viewLogin')" class="text-blue-500 hover:underline">Voltar</a></div>
         </div>
     </div>
 
-    <!-- PAINEL DO USUÁRIO (DASHBOARD) - Inicialmente Oculto e Largo -->
-    <div id="viewDashboard" class="hidden max-w-4xl mx-auto mt-10 p-6 bg-white rounded-lg shadow-md">
+    <!-- PAINEL DO USUÁRIO (DASHBOARD) -->
+    <div id="viewDashboard" class="hidden max-w-7xl mx-auto mt-10 p-6 bg-white rounded-lg shadow-md mb-10">
+        
+        <!-- Cabeçalho Dashboard -->
         <div class="flex justify-between items-start border-b pb-4 mb-4">
             <div>
                 <h2 class="text-3xl font-bold text-gray-800">Bem-vindo, <span id="dashNome" class="text-blue-600"></span></h2>
-                <p class="text-gray-600 mt-1">Status da conta: <span class="bg-green-100 text-green-800 text-xs font-semibold px-2.5 py-0.5 rounded">Ativo</span></p>
-                <p class="text-gray-600 mt-1 font-medium">Empresa/Grupo: <span id="dashGrupo"></span></p>
+                <p class="text-gray-600 mt-1 font-medium">Grupo: <span id="dashGrupo"></span></p>
             </div>
             <div>
-                <a id="dashLinkPlanilha" href="#" target="_blank" class="bg-indigo-600 hover:bg-indigo-700 text-white py-2 px-4 rounded shadow">
+                <a id="dashLinkPlanilha" href="#" target="_blank" class="bg-indigo-600 hover:bg-indigo-700 text-white py-2 px-4 rounded shadow font-bold">
                     🔗 Acessar Planilha do Grupo
                 </a>
             </div>
         </div>
 
-        <div class="bg-gray-50 p-4 rounded border">
-            <h3 class="text-xl font-semibold mb-4 text-gray-700">Inserção Rápida de Dados</h3>
-            <p class="text-sm text-gray-500 mb-4">Esses dados serão enviados diretamente para a aba "Operacional" da sua planilha exclusiva.</p>
-            
+        <!-- Módulo: Inserção Rápida de Dados -->
+        <div class="bg-gray-50 p-4 rounded border mb-6">
+            <h3 class="text-xl font-semibold mb-2 text-gray-700">Inserção Rápida (Aba Operacional)</h3>
             <form id="formAddData" class="flex gap-4 items-end">
-                <div class="flex-1">
-                    <label class="block text-sm font-medium">Dado Operacional 1</label>
-                    <input type="text" id="opDado1" required class="w-full mt-1 p-2 border rounded">
-                </div>
-                <div class="flex-1">
-                    <label class="block text-sm font-medium">Dado Operacional 2</label>
-                    <input type="text" id="opDado2" required class="w-full mt-1 p-2 border rounded">
-                </div>
-                <button type="submit" class="bg-green-600 text-white px-6 py-2 rounded hover:bg-green-700 h-[42px] flex items-center justify-center">
-                    <span id="dataText">Salvar</span>
-                    <span id="dataLoader" class="loader hidden ml-2"></span>
+                <div class="flex-1"><label class="block text-sm font-medium">Dado 1</label><input type="text" id="opDado1" required class="w-full mt-1 p-2 border rounded"></div>
+                <div class="flex-1"><label class="block text-sm font-medium">Dado 2</label><input type="text" id="opDado2" required class="w-full mt-1 p-2 border rounded"></div>
+                <button type="submit" class="bg-green-600 text-white px-6 py-2 rounded hover:bg-green-700 h-[42px] flex items-center justify-center font-bold">
+                    <span id="dataText">Salvar Dado</span><span id="dataLoader" class="loader hidden ml-2"></span>
                 </button>
             </form>
-            <div id="dataMsg" class="mt-3 text-sm text-center hidden"></div>
+            <div id="dataMsg" class="mt-3 text-sm hidden"></div>
         </div>
+
+        <!-- Módulo: SISTEMA DE RANKING INTEGRADO -->
+        <div id="ranking-app">
+            <div class="top">
+                <h1>Ranking Geral</h1>
+                <div class="subtitle">Faixa X (0 – 19.999M) · Faixa Y (20M ou mais)</div>
+                <div class="status-line"><span class="status-dot" id="status-dot"></span><span id="sync-status">aguardando...</span></div>
+            </div>
+
+            <!-- Painel de Lançamento -->
+            <div class="panel accent-x">
+                <div class="panel-title">Lançar pontuação do dia <span class="day-tag" id="launch-day-label">Dia —</span></div>
+                <div class="launch-tabs">
+                    <button type="button" class="launch-tab active" id="tab-form" onclick="switchLaunchTab('form')">✏️ Preencher</button>
+                    <button type="button" class="launch-tab" id="tab-paste" onclick="switchLaunchTab('paste')">📋 Colar</button>
+                </div>
+
+                <div id="launch-view-form">
+                    <div class="launch-columns">
+                        <div class="launch-col x">
+                            <div class="launch-col-head"><span class="launch-col-title">Faixa X</span><span class="launch-col-count" id="launch-count-x"></span></div>
+                            <div class="launch-list" id="launch-list-x"></div>
+                            <div id="launch-new-x"></div>
+                            <div style="margin-top:10px"><button type="button" onclick="addDraftRow('x')">+ novo participante</button></div>
+                        </div>
+                        <div class="launch-col y">
+                            <div class="launch-col-head"><span class="launch-col-title">Faixa Y</span><span class="launch-col-count" id="launch-count-y"></span></div>
+                            <div class="launch-list" id="launch-list-y"></div>
+                            <div id="launch-new-y"></div>
+                            <div style="margin-top:10px"><button type="button" onclick="addDraftRow('y')">+ novo participante</button></div>
+                        </div>
+                    </div>
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-top:18px; border-top:1px dashed var(--line); padding-top:14px;">
+                        <span style="color:var(--muted); font-size:11.5px;" id="launch-progress"></span>
+                        <button type="button" class="launch-submit" onclick="launchDayForm()">Lançar dia</button>
+                    </div>
+                </div>
+
+                <div id="launch-view-paste" style="display:none;">
+                    <textarea id="paste-area" placeholder="João, 8;&#10;Maria, -1;&#10;Pedro, -1;"></textarea>
+                    <div style="margin-top:10px;"><button onclick="processPaste()">Ler colagem</button></div>
+                    <div id="pending-panel" style="display:none; margin-top:16px; background:var(--panel-2); border:1px solid var(--y-color); padding:14px; border-radius:10px;">
+                        <div style="color:var(--y-color); font-weight:bold; margin-bottom:10px;">Confirmar lançamento:</div>
+                        <label>Aplicar em: <select id="pending-day-select"></select></label>
+                        <label class="ml-2">Faixa todos: <select id="pending-bulk-div" onchange="applyBulkDiv(this.value)"><option value="">-</option><option value="x">X</option><option value="y">Y</option></select></label>
+                        <div id="pending-list" class="mt-2"></div>
+                        <div style="margin-top:12px; display:flex; gap:8px;">
+                            <button onclick="confirmImport()">Lançar</button>
+                            <button class="danger" onclick="cancelImport()">Cancelar</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quadros X e Y -->
+            <div class="board">
+                <div class="division x" id="div-x">
+                    <div class="division-head">
+                        <div><div class="division-title">Faixa X</div></div>
+                    </div>
+                    <div class="table-wrap"><table><thead><tr id="head-x"></tr></thead><tbody id="body-x"></tbody></table></div>
+                    <div style="padding:10px;"><button onclick="addParticipant('x')">+ Participante</button></div>
+                </div>
+
+                <div class="division y" id="div-y">
+                    <div class="division-head">
+                        <div><div class="division-title">Faixa Y</div></div>
+                    </div>
+                    <div class="table-wrap"><table><thead><tr id="head-y"></tr></thead><tbody id="body-y"></tbody></table></div>
+                    <div style="padding:10px;"><button onclick="addParticipant('y')">+ Participante</button></div>
+                </div>
+            </div>
+
+            <!-- Resumo -->
+            <div class="panel accent-y">
+                <div class="panel-title">Resumo do Dia / Texto Pronto</div>
+                <div style="display:flex; gap:8px; margin-bottom:10px;">
+                    <select id="summary-day" onchange="generateSummary()"></select>
+                    <button onclick="generateSummary()">Gerar</button>
+                    <button onclick="copySummary()" id="copy-btn">Copiar</button>
+                </div>
+                <textarea id="summary-output" readonly placeholder="O texto aparece aqui..."></textarea>
+            </div>
+            
+            <div style="text-align:center; display:flex; gap:10px; justify-content:center;">
+                <button onclick="addDay()">+ Dia Branco</button>
+                <button onclick="removeLastDay()">− Último dia</button>
+                <button class="danger" onclick="resetAll()">Limpar tudo</button>
+            </div>
+        </div>
+
     </div>
 
-    <!-- SCRIPTS -->
+    <!-- ==========================================
+         LÓGICA JAVASCRIPT GERAL
+         ========================================== -->
     <script>
-        // === ATENÇÃO: COLOQUE AQUI A URL GERADA NO PASSO DE IMPLANTAÇÃO DO GOOGLE APPS SCRIPT ===
-        const API_URL = "https://script.google.com/macros/s/AKfycbw7Zf9buedPdruP2o-S4YwF23zYqMMmfOsCvyvtZg2xwrWekuiOwdfgvTMNWNRjuDdy/exec"; 
+        // ATENÇÃO: COLOQUE A URL DO SEU GOOGLE APPS SCRIPT AQUI
+        const API_URL = "SUA_URL_DO_WEB_APP_AQUI"; 
 
-        // Função para alternar visualização das telas
+        // ----- LÓGICA DO APPMANAGER (LOGIN/SESSÃO) -----
         function switchView(viewId) {
             const views = ['viewLogin', 'viewRegister', 'viewRecover'];
             document.getElementById('mainContainer').classList.remove('hidden');
             document.getElementById('viewDashboard').classList.add('hidden');
-            
-            views.forEach(v => {
-                document.getElementById(v).classList.add('hidden');
-            });
+            views.forEach(v => document.getElementById(v).classList.add('hidden'));
             document.getElementById(viewId).classList.remove('hidden');
         }
 
-        // Mostrar dashboard e esconder login
+        async function fetchAPI(payload, btnTextId, loaderId) {
+            if(btnTextId) document.getElementById(btnTextId).classList.add('hidden');
+            if(loaderId) document.getElementById(loaderId).classList.remove('hidden');
+            try {
+                const response = await fetch(API_URL, { method: 'POST', body: JSON.stringify(payload) });
+                return await response.json();
+            } catch (error) {
+                console.error(error); return { success: false };
+            } finally {
+                if(btnTextId) document.getElementById(btnTextId).classList.remove('hidden');
+                if(loaderId) document.getElementById(loaderId).classList.add('hidden');
+            }
+        }
+
+        document.getElementById('formLogin').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const res = await fetchAPI({
+                action: 'login', email: document.getElementById('loginEmail').value, senha: document.getElementById('loginSenha').value
+            }, 'loginText', 'loginLoader');
+            if (res.success) {
+                localStorage.setItem('sessionUser', JSON.stringify(res.user));
+                localStorage.setItem('sessionGroup', JSON.stringify(res.group));
+                showDashboard(res.user, res.group);
+            } else alert(res.message);
+        });
+
+        // Demais Submits do Auth
+        document.getElementById('formRegister').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const payload = { action: 'register', nome: document.getElementById('regNome').value, grupo: document.getElementById('regGrupo').value, email: document.getElementById('regEmail').value, senha: document.getElementById('regSenha').value };
+            const res = await fetchAPI(payload, 'regText', 'regLoader');
+            if (res.success) { alert(res.message); switchView('viewLogin'); } else alert(res.message);
+        });
+        document.getElementById('formRecover').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const res = await fetchAPI({ action: 'recover', email: document.getElementById('recEmail').value }, 'recText', 'recLoader');
+            alert(res.message); if(res.success) switchView('viewLogin');
+        });
+        document.getElementById('formAddData').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const g = JSON.parse(localStorage.getItem('sessionGroup'));
+            const u = JSON.parse(localStorage.getItem('sessionUser'));
+            const res = await fetchAPI({ action: 'addData', planilhaId: g.planilhaId, usuarioNome: u.nome, dado1: document.getElementById('opDado1').value, dado2: document.getElementById('opDado2').value }, 'dataText', 'dataLoader');
+            const msg = document.getElementById('dataMsg'); msg.classList.remove('hidden');
+            msg.innerText = res.success ? res.message : "Erro ao salvar"; msg.className = "mt-3 text-sm font-bold text-" + (res.success?"green":"red") + "-600";
+            setTimeout(() => msg.classList.add('hidden'), 4000);
+        });
+
+        document.getElementById('btnLogout').addEventListener('click', () => {
+            localStorage.clear();
+            document.getElementById('btnLogout').classList.add('hidden');
+            switchView('viewLogin');
+        });
+
+        window.onload = () => {
+            const user = localStorage.getItem('sessionUser');
+            const group = localStorage.getItem('sessionGroup');
+            if (user && group) showDashboard(JSON.parse(user), JSON.parse(group));
+            else switchView('viewLogin');
+        };
+
         function showDashboard(user, group) {
             document.getElementById('mainContainer').classList.add('hidden');
             document.getElementById('viewDashboard').classList.remove('hidden');
             document.getElementById('btnLogout').classList.remove('hidden');
-
             document.getElementById('dashNome').innerText = user.nome;
             document.getElementById('dashGrupo').innerText = group.nome;
             document.getElementById('dashLinkPlanilha').href = group.planilhaUrl;
+            
+            // Ativa o carregamento do Ranking logo após entrar no Dashboard
+            loadRankingState(); 
         }
 
-        // Função central para fazer requisições POST para o Apps Script
-        async function fetchAPI(payload, btnTextId, loaderId) {
-            document.getElementById(btnTextId).classList.add('hidden');
-            document.getElementById(loaderId).classList.remove('hidden');
-            
-            try {
-                // Apps script requires POST with text/plain to avoid CORS preflight block for json
-                const response = await fetch(API_URL, {
-                    method: 'POST',
-                    body: JSON.stringify(payload)
-                });
-                const data = await response.json();
-                return data;
-            } catch (error) {
-                alert('Erro de comunicação com o servidor.');
-                console.error(error);
-                return { success: false };
-            } finally {
-                document.getElementById(btnTextId).classList.remove('hidden');
-                document.getElementById(loaderId).classList.add('hidden');
-            }
+        // ==========================================
+        // LÓGICA DO RANKING (Integrado)
+        // ==========================================
+        const DEFAULT_DAYS = 7;
+        function buildDefaultState(){ return { days: DEFAULT_DAYS, x: [], y: [] }; }
+
+        let state = buildDefaultState();
+        let loaded = false; let pendingImport = null; let pendingDayMode = 'new';
+        let draft = { x:{}, y:{} }; let draftNew = { x:[], y:[] };
+
+        function setStatus(text, ok){
+            document.getElementById('sync-status').textContent = text;
+            document.getElementById('status-dot').style.background = ok === false ? 'var(--neg)' : (ok === 'busy' ? 'var(--y-color)' : 'var(--x-color)');
         }
 
-        // Submit de Cadastro
-        document.getElementById('formRegister').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const payload = {
-                action: 'register',
-                nome: document.getElementById('regNome').value,
-                grupo: document.getElementById('regGrupo').value,
-                email: document.getElementById('regEmail').value,
-                senha: document.getElementById('regSenha').value
-            };
-            
-            const res = await fetchAPI(payload, 'regText', 'regLoader');
-            if (res.success) {
-                alert(res.message + "\nFaça login para continuar.");
-                document.getElementById('formRegister').reset();
-                switchView('viewLogin');
-            } else {
-                alert(res.message || 'Erro ao cadastrar.');
-            }
-        });
-
-        // Submit de Login
-        document.getElementById('formLogin').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const payload = {
-                action: 'login',
-                email: document.getElementById('loginEmail').value,
-                senha: document.getElementById('loginSenha').value
-            };
-
-            const res = await fetchAPI(payload, 'loginText', 'loginLoader');
-            if (res.success) {
-                // Salvar na sessão (Local Storage)
-                localStorage.setItem('sessionUser', JSON.stringify(res.user));
-                localStorage.setItem('sessionGroup', JSON.stringify(res.group));
-                showDashboard(res.user, res.group);
-            } else {
-                alert(res.message);
-            }
-        });
-
-        // Submit de Recuperação
-        document.getElementById('formRecover').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const payload = {
-                action: 'recover',
-                email: document.getElementById('recEmail').value
-            };
-
-            const res = await fetchAPI(payload, 'recText', 'recLoader');
-            alert(res.message);
-            if(res.success) switchView('viewLogin');
-        });
-
-        // Submit de Inserção de Dados (Dashboard)
-        document.getElementById('formAddData').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const user = JSON.parse(localStorage.getItem('sessionUser'));
+        // CARREGA DA PLANILHA DO GOOGLE DO GRUPO (Backend Apps Script)
+        async function loadRankingState() {
+            setStatus('carregando do Google Sheets...', 'busy');
             const group = JSON.parse(localStorage.getItem('sessionGroup'));
+            if(!group) return;
 
-            const payload = {
-                action: 'addData',
-                planilhaId: group.planilhaId,
-                usuarioNome: user.nome,
-                dado1: document.getElementById('opDado1').value,
-                dado2: document.getElementById('opDado2').value
-            };
+            try {
+                const res = await fetch(API_URL, {
+                    method: 'POST',
+                    body: JSON.stringify({ action: 'loadRanking', planilhaId: group.planilhaId })
+                });
+                const data = await res.json();
+                if (data.success && data.state) {
+                    state = data.state;
+                } else if (!data.state) {
+                    // Sem dados salvos ainda na planilha, usa padrão
+                    state = buildDefaultState();
+                }
+                setStatus('sincronizado ✓', true);
+            } catch(e) {
+                console.error(e);
+                setStatus('erro (usando memória local)', false);
+            }
+            loaded = true;
+            renderAll();
+        }
 
-            const res = await fetchAPI(payload, 'dataText', 'dataLoader');
-            const msgBox = document.getElementById('dataMsg');
-            msgBox.classList.remove('hidden');
+        // SALVA NA PLANILHA DO GOOGLE DO GRUPO
+        let saveTimeout = null;
+        function saveState(){
+            clearTimeout(saveTimeout);
+            // Salva na nuvem com atraso de 2.5s para evitar muitos POSTs seguidos se o usuário digitar muito rápido
+            saveTimeout = setTimeout(syncToGoogleSheets, 2500); 
+        }
+
+        async function syncToGoogleSheets(){
+            setStatus('salvando no Sheets...', 'busy');
+            const group = JSON.parse(localStorage.getItem('sessionGroup'));
+            if(!group) return;
+
+            try {
+                const res = await fetch(API_URL, {
+                    method: 'POST',
+                    body: JSON.stringify({ action: 'saveRanking', planilhaId: group.planilhaId, state: state })
+                });
+                const data = await res.json();
+                if (data.success) setStatus('sincronizado ✓', true);
+                else throw new Error();
+            } catch(e) {
+                setStatus('erro ao sincronizar na rede', false);
+            }
+        }
+
+        // Funções de manipulação do Ranking (Idênticas ao seu código original)
+        function total(p){ return p.scores.reduce((s,v)=> s + (v ?? 0), 0); }
+        function tiebreakDay(a,b){
+            for(let d=state.days-1; d>=0; d--){ if((a.scores[d]??0) !== (b.scores[d]??0)) return d; } return null;
+        }
+        function sortDivision(div){
+            const list = state[div].map((p,i)=>({...p, idx:i, total: total(p)}));
+            list.sort((a,b)=>{
+                if(b.total !== a.total) return b.total - a.total;
+                const d = tiebreakDay(a,b); return d===null ? 0 : (b.scores[d]??0)-(a.scores[d]??0);
+            });
+            return list;
+        }
+
+        function renderDivision(div){
+            const head = document.getElementById('head-'+div);
+            const body = document.getElementById('body-'+div);
+            let h = '<th class="rank">#</th><th class="name">Nome</th>';
+            for(let d=0; d<state.days; d++) h += `<th>D${d+1}</th>`;
+            h += '<th>Tot</th><th></th>';
+            head.innerHTML = h;
+
+            const sorted = sortDivision(div);
+            body.innerHTML = sorted.map((p, rank)=>{
+                let cells = '';
+                for(let d=0; d<state.days; d++){
+                    const val = p.scores[d];
+                    const cls = val === null ? '' : (val < 0 ? 'val-neg' : 'val-pos');
+                    cells += `<td><input class="score ${cls}" value="${val===null?'':val}" onchange="updateScore('${div}', ${p.idx}, ${d}, this.value)"></td>`;
+                }
+                return `<tr>
+                    <td class="rank">${rank+1}</td>
+                    <td class="name">${p.name}</td>
+                    ${cells}
+                    <td style="font-weight:bold">${p.total}</td>
+                    <td><button class="del-x-btn" onclick="state['${div}'].splice(${p.idx},1); saveState(); renderAll();">✕</button></td>
+                </tr>`;
+            }).join('');
+        }
+
+        function updateScore(div, idx, dayIdx, value){
+            let num = value.trim() === '' ? null : parseFloat(value.replace(',','.'));
+            if(num !== null && num > 10) num = 10;
+            state[div][idx].scores[dayIdx] = isNaN(num) ? null : num;
+            saveState(); renderAll();
+        }
+        function addParticipant(div){
+            const n = prompt('Nome:'); if(n) { state[div].push({name:n, scores:Array(state.days).fill(null)}); saveState(); renderAll(); }
+        }
+        function addDay(){
+            state.days++; state.x.forEach(p=>p.scores.push(null)); state.y.forEach(p=>p.scores.push(null)); saveState(); renderAll();
+        }
+        function removeLastDay(){
+            if(state.days>0){ state.days--; state.x.forEach(p=>p.scores.pop()); state.y.forEach(p=>p.scores.pop()); saveState(); renderAll(); }
+        }
+        function resetAll(){
+            if(confirm('Apagar tudo?')){ state = {days:0, x:[], y:[]}; saveState(); renderAll(); }
+        }
+
+        // Funções de Lançamento e Abas
+        function switchLaunchTab(t){
+            document.getElementById('launch-view-form').style.display = t==='form'?'':'none';
+            document.getElementById('launch-view-paste').style.display = t==='paste'?'':'none';
+            document.getElementById('tab-form').className = 'launch-tab ' + (t==='form'?'active':'');
+            document.getElementById('tab-paste').className = 'launch-tab ' + (t==='paste'?'active':'');
+        }
+        function addDraftRow(div){
+            draftNew[div].push({name:'', value:''}); renderLaunchForm();
+        }
+        function renderLaunchForm(){
+            ['x','y'].forEach(div => {
+                const el = document.getElementById('launch-list-'+div);
+                el.innerHTML = state[div].map((p,i)=>`
+                    <div class="launch-row">
+                        <span style="flex:1">${p.name}</span>
+                        <input class="launch-input" placeholder="-" oninput="draft.${div}[${i}]=this.value">
+                    </div>
+                `).join('');
+                document.getElementById('launch-new-'+div).innerHTML = draftNew[div].map((r,i)=>`
+                    <div class="launch-row">
+                        <input class="launch-name-input" placeholder="Novo..." value="${r.name}" oninput="draftNew.${div}[${i}].name=this.value">
+                        <input class="launch-input" placeholder="pts" value="${r.value}" oninput="draftNew.${div}[${i}].value=this.value">
+                    </div>
+                `).join('');
+                document.getElementById('launch-count-'+div).innerText = state[div].length + ' cadastrados';
+            });
+            document.getElementById('launch-day-label').innerText = 'Dia ' + (state.days+1);
+        }
+        function launchDayForm(){
+            state.days++; const idx = state.days-1;
+            state.x.forEach(p=>p.scores.push(null)); state.y.forEach(p=>p.scores.push(null));
+            ['x','y'].forEach(div => {
+                state[div].forEach((p,i)=>{ if(draft[div][i]) p.scores[idx] = parseFloat(draft[div][i].replace(',','.')); });
+                draftNew[div].forEach(r=>{
+                    if(r.name && r.value){
+                        state[div].push({name:r.name, scores: Array(state.days).fill(null).map((_,i)=>i===idx?parseFloat(r.value.replace(',','.')):null)});
+                    }
+                });
+            });
+            draft = {x:{}, y:{}}; draftNew={x:[], y:[]};
+            saveState(); renderAll();
+        }
+
+        // Colar/Importar
+        function processPaste(){
+            const text = document.getElementById('paste-area').value;
+            const parsed = text.split(/[;\n]+/).map(s=>s.trim()).filter(Boolean).map(c=>{
+                const m = c.match(/^(.+)[,\s\t]+(-?\d+(?:[.,]\d+)?)\s*$/);
+                return m ? {name:m[1].trim(), value: Math.min(parseFloat(m[2].replace(',','.')), 10)} : null;
+            }).filter(Boolean);
+            if(!parsed.length) return alert('Nenhum lido. Formato: Nome, Pontos');
+            pendingImport = parsed.map(e => ({...e, div: state.x.find(p=>p.name===e.name)?'x': state.y.find(p=>p.name===e.name)?'y':'x'}));
+            document.getElementById('pending-panel').style.display='block';
             
-            if (res.success) {
-                msgBox.innerText = res.message;
-                msgBox.className = "mt-3 text-sm text-center text-green-600 font-bold";
-                document.getElementById('formAddData').reset();
-            } else {
-                msgBox.innerText = "Erro ao salvar dados.";
-                msgBox.className = "mt-3 text-sm text-center text-red-600 font-bold";
+            const sel = document.getElementById('pending-day-select'); sel.innerHTML = `<option value="new">Novo Dia (${state.days+1})</option>`;
+            for(let d=state.days-1; d>=0; d--) sel.innerHTML += `<option value="${d}">Dia ${d+1}</option>`;
+            
+            renderPending();
+        }
+        function renderPending(){
+            document.getElementById('pending-list').innerHTML = pendingImport.map((e,i)=>`
+                <div style="display:flex; justify-content:space-between; margin-bottom:5px; font-size:12px;">
+                    <span>${e.name} (${e.value})</span>
+                    <select onchange="pendingImport[${i}].div=this.value"><option value="x" ${e.div==='x'?'selected':''}>X</option><option value="y" ${e.div==='y'?'selected':''}>Y</option></select>
+                </div>
+            `).join('');
+        }
+        function applyBulkDiv(v){ if(v) {pendingImport.forEach(e=>e.div=v); renderPending();} }
+        function cancelImport(){ document.getElementById('pending-panel').style.display='none'; }
+        function confirmImport(){
+            const dayMode = document.getElementById('pending-day-select').value;
+            if(dayMode==='new'){ state.days++; state.x.forEach(p=>p.scores.push(null)); state.y.forEach(p=>p.scores.push(null)); }
+            const targetDay = dayMode==='new' ? state.days-1 : parseInt(dayMode);
+            
+            pendingImport.forEach(e => {
+                let p = state[e.div].find(x=>x.name===e.name);
+                if(!p) { p = {name:e.name, scores:Array(state.days).fill(null)}; state[e.div].push(p); }
+                p.scores[targetDay] = e.value;
+            });
+            document.getElementById('pending-panel').style.display='none'; document.getElementById('paste-area').value='';
+            switchLaunchTab('form'); saveState(); renderAll();
+        }
+
+        // Resumo
+        function generateSummary(){
+            const out = document.getElementById('summary-output');
+            const sel = document.getElementById('summary-day');
+            if(state.days===0){ out.value=''; sel.innerHTML=''; return; }
+            if(sel.options.length !== state.days) {
+                sel.innerHTML=''; for(let d=0; d<state.days; d++) sel.innerHTML+=`<option value="${d}">Dia ${d+1}</option>`;
+                sel.value = state.days-1;
             }
+            
+            const day = parseInt(sel.value);
+            out.value = `🏆 RANKING DIA ${day+1}\n\n` + 
+                `X:\n` + sortDivision('x').filter(p=>p.scores[day]!=null).map((p,i)=>`${i+1}° ${p.name} (${p.scores[day]})`).join('\n') + `\n\n` +
+                `Y:\n` + sortDivision('y').filter(p=>p.scores[day]!=null).map((p,i)=>`${i+1}° ${p.name} (${p.scores[day]})`).join('\n');
+        }
+        function copySummary(){
+            const el = document.getElementById('summary-output'); el.select(); document.execCommand('copy');
+            const btn = document.getElementById('copy-btn'); btn.innerText='Copiado!'; setTimeout(()=>btn.innerText='Copiar', 1500);
+        }
 
-            setTimeout(() => { msgBox.classList.add('hidden'); }, 4000);
-        });
-
-        // Logout
-        document.getElementById('btnLogout').addEventListener('click', () => {
-            localStorage.removeItem('sessionUser');
-            localStorage.removeItem('sessionGroup');
-            document.getElementById('btnLogout').classList.add('hidden');
-            document.getElementById('formLogin').reset();
-            switchView('viewLogin');
-        });
-
-        // Checar sessão ativa ao carregar a página
-        window.onload = () => {
-            const user = localStorage.getItem('sessionUser');
-            const group = localStorage.getItem('sessionGroup');
-            if (user && group) {
-                showDashboard(JSON.parse(user), JSON.parse(group));
-            } else {
-                switchView('viewLogin');
-            }
-        };
+        function renderAll(){
+            if(!loaded) return;
+            renderDivision('x'); renderDivision('y');
+            renderLaunchForm(); generateSummary();
+        }
     </script>
 </body>
 </html>
