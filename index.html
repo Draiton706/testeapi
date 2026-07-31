@@ -16,7 +16,6 @@
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
         .hidden { display: none !important; }
 
-        /* Sidebar de Configurações */
         #settingsSidebar {
             transform: translateX(100%);
             transition: transform 0.3s ease-in-out;
@@ -25,6 +24,7 @@
             transform: translateX(0);
         }
 
+        /* CONFIGURAÇÃO DE CORES DINÂMICAS (LIGHT & DARK AUTOMÁTICO) */
         #ranking-app {
             --bg: transparent; 
             --panel: #f8fafc;
@@ -38,7 +38,26 @@
             --y-dim: #fde68a;
             --neg: #ef4444;
             --pos: #10b981;
+            --input-bg: #ffffff;
+            --table-head: #f8fafc;
+        }
 
+        /* SE O SISTEMA DO USUÁRIO ESTIVER EM MODO ESCURO */
+        @media (prefers-color-scheme: dark) {
+            #ranking-app {
+                --panel: #1e293b; /* slate-800 */
+                --panel-2: #0f172a; /* slate-900 */
+                --line: #334155; /* slate-700 */
+                --text: #f1f5f9; /* slate-100 */
+                --muted: #94a3b8; /* slate-400 */
+                --x-dim: #0369a1;
+                --y-dim: #92400e;
+                --input-bg: #0f172a;
+                --table-head: #1e293b;
+            }
+        }
+
+        #ranking-app {
             background: var(--bg); color: var(--text);
             font-family: 'IBM Plex Mono', monospace;
             width: 100%; margin-top: 10px;
@@ -46,7 +65,7 @@
         
         #ranking-app :focus-visible { outline: 2px solid var(--x-color); outline-offset: 2px; }
         #ranking-app .top { width: 100%; margin: 0 auto 22px; text-align: center; }
-        #ranking-app h1 { font-family: 'Oswald', sans-serif; font-weight: 700; text-transform: uppercase; font-size: clamp(22px,5vw,30px); margin: 0 0 4px; color: #0f172a; }
+        #ranking-app h1 { font-family: 'Oswald', sans-serif; font-weight: 700; text-transform: uppercase; font-size: clamp(22px,5vw,30px); margin: 0 0 4px; color: var(--text); }
         #ranking-app .subtitle { color: var(--muted); font-size: 13px; }
         #ranking-app .status-line { margin-top: 8px; font-size: 11px; color: var(--muted); display: inline-flex; align-items: center; gap: 6px; }
         #ranking-app .status-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--x-color); display: inline-block; }
@@ -54,12 +73,12 @@
         #ranking-app .panel { width: 100%; margin: 0 auto 20px; background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 18px 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
         #ranking-app .panel.accent-x { border-top: 3px solid var(--x-color); }
         #ranking-app .panel.accent-y { border-top: 3px solid var(--y-color); }
-        #ranking-app .panel-title { font-family: 'Oswald', sans-serif; font-weight: 600; text-transform: uppercase; font-size: 15px; display: flex; align-items: center; gap: 8px; color: #0f172a; }
+        #ranking-app .panel-title { font-family: 'Oswald', sans-serif; font-weight: 600; text-transform: uppercase; font-size: 15px; display: flex; align-items: center; gap: 8px; color: var(--text); }
         #ranking-app .panel-title .day-tag { font-family: 'IBM Plex Mono', monospace; font-size: 11.5px; color: var(--muted); background: var(--panel-2); border: 1px solid var(--line); border-radius: 20px; padding: 2px 10px; }
         
         #ranking-app .launch-tabs { display: flex; gap: 6px; margin-bottom: 16px; }
-        #ranking-app .launch-tab { background: #ffffff; border: 1px solid var(--line); color: var(--muted); padding: 8px 14px; border-radius: 8px; font-weight: 600; cursor: pointer; transition: all 0.2s;}
-        #ranking-app .launch-tab.active { color: var(--x-color); border-color: var(--x-color); background: #f0f9ff; }
+        #ranking-app .launch-tab { background: var(--panel-2); border: 1px solid var(--line); color: var(--muted); padding: 8px 14px; border-radius: 8px; font-weight: 600; cursor: pointer; transition: all 0.2s;}
+        #ranking-app .launch-tab.active { color: var(--x-color); border-color: var(--x-color); background: var(--panel); }
         #ranking-app .launch-columns { display: grid; grid-template-columns: 1fr 1fr; gap: 26px; }
         @media (max-width:760px){ #ranking-app .launch-columns{ grid-template-columns: 1fr; } }
         
@@ -69,18 +88,18 @@
         #ranking-app .launch-col.y .launch-col-title { color: var(--y-color); }
         
         #ranking-app .launch-row { display: flex; align-items: center; gap: 10px; padding: 7px 0; border-bottom: 1px solid var(--line); font-size: 13px; }
-        #ranking-app .launch-input { width: 66px; background: #ffffff; border: 1px solid var(--line); border-radius: 6px; color: var(--text); text-align: center; padding: 7px 4px; font-weight: 600;}
-        #ranking-app .launch-input.val-pos { color: var(--pos); border-color: var(--x-dim); background: #ecfdf5;}
-        #ranking-app .launch-input.val-neg { color: var(--neg); border-color: #fecaca; background: #fef2f2;}
+        #ranking-app .launch-input { width: 66px; background: var(--input-bg); border: 1px solid var(--line); border-radius: 6px; color: var(--text); text-align: center; padding: 7px 4px; font-weight: 600;}
+        #ranking-app .launch-input.val-pos { color: var(--pos); border-color: var(--x-dim); }
+        #ranking-app .launch-input.val-neg { color: var(--neg); border-color: var(--line); }
         
-        #ranking-app .launch-name-input { flex: 1; background: #ffffff; border: 1px dashed var(--muted); border-radius: 6px; color: var(--text); padding: 7px 9px; }
+        #ranking-app .launch-name-input { flex: 1; background: var(--input-bg); border: 1px dashed var(--muted); border-radius: 6px; color: var(--text); padding: 7px 9px; }
         #ranking-app .launch-submit { background: var(--x-color); color: #ffffff; font-weight: 700; padding: 10px 22px; border-radius: 8px; cursor: pointer; border: none; transition: 0.2s;}
         #ranking-app .launch-submit:hover { opacity: 0.9; }
-        #ranking-app textarea { background: #ffffff; border: 1px solid var(--line); border-radius: 6px; color: var(--text); padding: 10px; width: 100%; min-height: 100px; }
+        #ranking-app textarea { background: var(--input-bg); border: 1px solid var(--line); border-radius: 6px; color: var(--text); padding: 10px; width: 100%; min-height: 100px; }
         
         #ranking-app .board { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; width: 100%; margin: 0 auto 20px; }
         @media (max-width:880px){ #ranking-app .board{grid-template-columns:1fr;} }
-        #ranking-app .division { background: #ffffff; border: 1px solid var(--line); border-radius: 10px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.05);}
+        #ranking-app .division { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.05);}
         #ranking-app .division-head { padding: 14px 16px; display: flex; justify-content: space-between; border-bottom: 1px solid var(--line); background: var(--panel);}
         #ranking-app .division.x .division-head { border-top: 3px solid var(--x-color); }
         #ranking-app .division.y .division-head { border-top: 3px solid var(--y-color); }
@@ -91,15 +110,15 @@
         #ranking-app .table-wrap { overflow-x: auto; }
         #ranking-app table { border-collapse: collapse; width: 100%; font-size: 13px; }
         #ranking-app th, #ranking-app td { padding: 8px 10px; text-align: center; border-bottom: 1px solid var(--line); white-space: nowrap; }
-        #ranking-app th { color: var(--muted); font-size: 11px; text-transform: uppercase; position: sticky; top: 0; background: var(--panel); }
-        #ranking-app td.name { text-align: left; font-weight: 600; min-width: 110px; position: sticky; left: 34px; background: #ffffff; z-index: 2; box-shadow: 2px 0 4px rgba(0,0,0,0.05); }
-        #ranking-app td.rank { font-weight: 700; color: var(--muted); width: 34px; position: sticky; left: 0; background: #ffffff; z-index: 2; }
-        #ranking-app input.score { width: 46px; background: var(--panel-2); border: 1px solid var(--line); border-radius: 5px; color: var(--text); text-align: center; padding: 4px 2px; font-weight: 500;}
+        #ranking-app th { color: var(--muted); font-size: 11px; text-transform: uppercase; position: sticky; top: 0; background: var(--table-head); }
+        #ranking-app td.name { text-align: left; font-weight: 600; min-width: 110px; position: sticky; left: 34px; background: var(--panel); z-index: 2; box-shadow: 2px 0 4px rgba(0,0,0,0.05); }
+        #ranking-app td.rank { font-weight: 700; color: var(--muted); width: 34px; position: sticky; left: 0; background: var(--panel); z-index: 2; }
+        #ranking-app input.score { width: 46px; background: var(--input-bg); border: 1px solid var(--line); border-radius: 5px; color: var(--text); text-align: center; padding: 4px 2px; font-weight: 500;}
         
-        #ranking-app button:not(.launch-submit) { background: #ffffff; color: var(--text); border: 1px solid var(--line); border-radius: 6px; padding: 7px 12px; cursor: pointer; font-weight: 500; font-size: 13px; transition: 0.2s;}
+        #ranking-app button:not(.launch-submit) { background: var(--panel-2); color: var(--text); border: 1px solid var(--line); border-radius: 6px; padding: 7px 12px; cursor: pointer; font-weight: 500; font-size: 13px; transition: 0.2s;}
         #ranking-app button:hover { border-color: var(--x-color); color: var(--x-color); }
         #ranking-app button.danger:hover { border-color: var(--neg); color: var(--neg); }
-        #ranking-app select { background: #ffffff; color: var(--text); border: 1px solid var(--line); padding: 6px 8px; border-radius: 5px; }
+        #ranking-app select { background: var(--input-bg); color: var(--text); border: 1px solid var(--line); padding: 6px 8px; border-radius: 5px; }
         #ranking-app .del-x-btn { background: none; border: none; padding: 0 4px; font-size: 14px; color: var(--muted);}
         #ranking-app .del-x-btn:hover { color: var(--neg); }
     </style>
