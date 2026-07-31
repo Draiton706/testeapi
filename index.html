@@ -442,7 +442,34 @@ function adicionarPontuacao(dados) {
             document.getElementById('dashLinkPlanilha').href = group.planilhaUrl;
             loadRankingState(); 
         }
+// Script para processar o envio da pontuação do usuário
+        document.getElementById('formAddScore').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const g = JSON.parse(localStorage.getItem('sessionGroup'));
+            const u = JSON.parse(localStorage.getItem('sessionUser'));
+            const faixa = document.getElementById('scoreFaixa').value;
+            const pontuacao = document.getElementById('scoreValor').value;
 
+            const res = await fetchAPI({ 
+                action: 'addScore', 
+                planilhaId: g.planilhaId, 
+                usuarioNome: u.nome, 
+                faixa: faixa, 
+                pontuacao: pontuacao 
+            }, 'scoreText', 'scoreLoader');
+            
+            const msg = document.getElementById('scoreMsg'); 
+            msg.classList.remove('hidden');
+            msg.innerText = res.success ? res.message : "Erro ao salvar"; 
+            msg.className = "mt-3 text-sm font-bold " + (res.success ? "text-green-600" : "text-red-600");
+            
+            if(res.success) {
+                document.getElementById('scoreValor').value = '';
+                // Como a pontuação alterou o backend, recarregamos o estado do ranking visual na hora
+                loadRankingState(); 
+            }
+            setTimeout(() => msg.classList.add('hidden'), 4000);
+        });
         // --- SISTEMA DE RANKING (Intacto) ---
         const DEFAULT_DAYS = 7;
         function buildDefaultState(){ return { days: DEFAULT_DAYS, x: [], y: [] }; }
