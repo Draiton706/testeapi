@@ -194,7 +194,7 @@
     padding:5px 7px; margin-left:6px;
   }
 
-  /* ---------- Board de ranking ---------- */
+  /* ---------- Board de ranking (Visualização) ---------- */
   .board{
     display:grid;
     grid-template-columns:1fr 1fr;
@@ -244,7 +244,7 @@
   .division.y .table-wrap::-webkit-scrollbar-thumb{ background:var(--y-dim); }
   .table-wrap::-webkit-scrollbar-thumb:hover{ background:var(--x-color); }
   table{ border-collapse:collapse; width:100%; font-size:12.5px; }
-  th,td{ padding:8px 10px; text-align:center; border-bottom:1px solid var(--line); white-space:nowrap; }
+  th,td{ padding:10px 12px; text-align:center; border-bottom:1px solid var(--line); white-space:nowrap; }
   th{
     color:var(--muted);
     font-weight:500;
@@ -255,7 +255,7 @@
   }
   tbody tr:hover td{ background:var(--panel-2); }
   td.name{
-    text-align:left; font-weight:600; min-width:110px;
+    text-align:left; font-weight:600; min-width:130px;
     position:sticky; left:34px; z-index:2; background:var(--panel);
     box-shadow:2px 0 4px rgba(0,0,0,0.35);
   }
@@ -276,19 +276,6 @@
   tr.top2 td.name::before{ content:'🥈 '; }
   tr.top3 td.name::before{ content:'🥉 '; }
   td.total{ font-weight:700; }
-  .row-btns{ display:flex; gap:4px; justify-content:center; }
-  input.score{
-    width:46px;
-    background:var(--panel-2);
-    border:1px solid var(--line);
-    border-radius:5px;
-    color:var(--text);
-    text-align:center;
-    font-family:'IBM Plex Mono', monospace;
-    font-size:12px;
-    padding:4px 2px;
-  }
-  input.score:focus{ outline:1px solid var(--x-color); }
   .val-pos{ color:var(--pos); }
   .val-neg{ color:var(--neg); }
   .tiebadge{
@@ -300,27 +287,7 @@
     border-radius:4px;
     padding:1px 5px;
   }
-  .row-actions{ padding:10px 16px; display:flex; gap:8px; border-top:1px solid var(--line); flex-wrap:wrap; }
-  button{
-    background:var(--panel-2);
-    color:var(--text);
-    border:1px solid var(--line);
-    border-radius:6px;
-    padding:7px 12px;
-    font-family:'IBM Plex Mono', monospace;
-    font-size:11.5px;
-    cursor:pointer;
-  }
-  button:hover{ border-color:var(--x-color); }
-  .division.y button:hover{ border-color:var(--y-color); }
-  button.danger:hover{ border-color:var(--neg); }
-  .global-actions{
-    max-width:1200px; margin:16px auto 0;
-    display:flex; justify-content:center; gap:10px; flex-wrap:wrap;
-  }
-  .del-x-btn{ background:none;border:none;color:var(--muted);cursor:pointer;font-size:14px;padding:0 4px; }
-  .del-x-btn:hover{ color:var(--neg); }
-  .empty-hint{ padding:16px; color:var(--muted); font-size:12px; text-align:center; }
+  .empty-hint{ padding:20px; color:var(--muted); font-size:12px; text-align:center; }
   .rules-note{
     max-width:1200px; margin:26px auto 0; color:var(--muted); font-size:11px;
     border-top:1px dashed var(--line); padding-top:14px; line-height:1.6;
@@ -395,6 +362,18 @@
   }
   .dash-sheet-link:hover{ border-color:var(--x-color); }
   .dash-user-name{ color:var(--muted); font-size:11px; }
+  
+  button{
+    background:var(--panel-2); color:var(--text); border:1px solid var(--line);
+    border-radius:6px; padding:7px 12px; font-family:'IBM Plex Mono', monospace;
+    font-size:11.5px; cursor:pointer;
+  }
+  button:hover{ border-color:var(--x-color); }
+  button.danger:hover{ border-color:var(--neg); }
+  .global-actions{
+    max-width:1200px; margin:16px auto 0;
+    display:flex; justify-content:center; gap:10px; flex-wrap:wrap;
+  }
 </style>
 </head>
 <body>
@@ -548,7 +527,6 @@
   </div>
 </div>
 
-<!-- PAINEL UTILITÁRIO / ESTATÍSTICAS ADICIONADO -->
 <div class="panel accent-x">
   <div class="panel-title">📊 Painel Utilitário / Estatísticas</div>
   <div class="panel-hint">Visão geral rápida com métricas acumuladas do ranking.</div>
@@ -568,6 +546,7 @@
   </div>
 </div>
 
+<!-- TELA DE VISUALIZAÇÃO DO RANKING (Somente Leitura) -->
 <div class="board">
   <div class="division x" id="div-x">
     <div class="division-head">
@@ -578,10 +557,6 @@
     </div>
     <div class="table-wrap"><table><thead><tr id="head-x"></tr></thead><tbody id="body-x"></tbody></table></div>
     <div class="empty-hint" id="empty-x" style="display:none;">Nenhum participante ainda.</div>
-    <div class="row-actions">
-      <button onclick="addParticipant('x')">+ Participante</button>
-      <button onclick="addDay()">+ Dia em branco</button>
-    </div>
   </div>
 
   <div class="division y" id="div-y">
@@ -593,10 +568,6 @@
     </div>
     <div class="table-wrap"><table><thead><tr id="head-y"></tr></thead><tbody id="body-y"></tbody></table></div>
     <div class="empty-hint" id="empty-y" style="display:none;">Nenhum participante ainda.</div>
-    <div class="row-actions">
-      <button onclick="addParticipant('y')">+ Participante</button>
-      <button onclick="addDay()">+ Dia em branco</button>
-    </div>
   </div>
 </div>
 
@@ -623,11 +594,7 @@
 </div><!-- /#tela-dashboard -->
 
 <script>
-/* ======================================================================
-   CONFIGURAÇÃO DA API (Google Apps Script)
-   Cole aqui a URL gerada ao implantar o Code.gs como Web App (veja o guia).
-   ====================================================================== */
-const API_URL = 'https://script.google.com/macros/s/AKfycbzff_8M64h_h4fpRUJ92UWUVJr80ZNyYE_C2Ko3LGIkPknZLZYelbnFSTYLlP_nKTLD/exec';
+const API_URL = 'COLE_AQUI_A_URL_DO_SEU_APPS_SCRIPT_WEB_APP';
 
 let usuarioAtual = null;
 let emailRecuperacaoAtual = '';
@@ -791,7 +758,6 @@ let loaded = false;
 let pendingImport = null;
 let pendingDayMode = 'new';
 
-// rascunho (não salvo) do formulário de lançamento do dia
 let draft = { x:{}, y:{} };
 let draftNew = { x:[], y:[] };
 
@@ -907,9 +873,6 @@ function processPaste(){
   });
   pendingDayMode = 'new';
   renderPending();
-  if(skipped.length){
-    console.warn('Linhas não reconhecidas na colagem:', skipped);
-  }
 }
 
 function populatePendingDaySelect(){
@@ -994,9 +957,6 @@ function confirmImport(){
   saveState(); render();
 }
 
-/* ======================================================================
-   ATUALIZAR ESTATÍSTICAS DO PAINEL UTILITÁRIO
-   ====================================================================== */
 function updateStatsPanel(){
   const elDays = document.getElementById('stat-days');
   const elX = document.getElementById('stat-x-count');
@@ -1006,10 +966,6 @@ function updateStatsPanel(){
   if(elX) elX.textContent = state.x.length;
   if(elY) elY.textContent = state.y.length;
 }
-
-/* ======================================================================
-   ARMAZENAMENTO NA PLANILHA DO GRUPO (Google Apps Script)
-   ====================================================================== */
 
 function setStatus(text, ok){
   const el = document.getElementById('sync-status');
@@ -1060,27 +1016,6 @@ async function syncToServer(){
   }
 }
 
-function addParticipant(div){
-  const name = prompt('Nome do participante:');
-  if(!name) return;
-  const list = state[div];
-  list.push({ name: name.trim(), scores: Array(state.days).fill(null) });
-  saveState(); render();
-}
-
-function removeParticipant(div, idx){
-  state[div].splice(idx,1);
-  saveState(); render();
-}
-
-function renameParticipant(div, idx){
-  const current = state[div][idx].name;
-  const name = prompt('Novo nome:', current);
-  if(!name || !name.trim() || name.trim() === current) return;
-  state[div][idx].name = name.trim();
-  saveState(); render();
-}
-
 function addDay(){
   state.days += 1;
   state.x.forEach(p=>p.scores.push(null));
@@ -1100,16 +1035,6 @@ function resetAll(){
   if(!confirm('Apagar todos os participantes e dias?')) return;
   state = { days: 0, x: [], y: [] };
   saveState(); render();
-}
-
-function updateScore(div, idx, dayIdx, value){
-  let v = value.trim();
-  let num = v === '' ? null : parseFloat(v);
-  if(num !== null && isNaN(num)) num = null;
-  if(num !== null && num > 10) num = 10;
-  state[div][idx].scores[dayIdx] = num;
-  saveState();
-  renderDivision(div);
 }
 
 function total(p){
@@ -1136,6 +1061,9 @@ function sortDivision(div){
   return list;
 }
 
+/* ======================================================================
+   RENDERIZAÇÃO DA TABELA SOMENTE LEITURA
+   ====================================================================== */
 function renderDivision(div){
   const head = document.getElementById('head-'+div);
   const body = document.getElementById('body-'+div);
@@ -1143,7 +1071,7 @@ function renderDivision(div){
 
   let headHtml = '<th class="rank-h">#</th><th class="name-h" style="text-align:left;">Nome</th>';
   for(let d=0; d<state.days; d++) headHtml += `<th>D${d+1}</th>`;
-  headHtml += '<th>Total</th><th></th>';
+  headHtml += '<th>Total</th>';
   head.innerHTML = headHtml;
 
   const sorted = sortDivision(div);
@@ -1155,9 +1083,8 @@ function renderDivision(div){
     for(let d=0; d<state.days; d++){
       const val = p.scores[d];
       const cls = val === null ? '' : (val < 0 ? 'val-neg' : val > 0 ? 'val-pos' : '');
-      cells += `<td><input class="score ${cls}" type="text" inputmode="numeric" pattern="-?[0-9]*"
-        value="${val === null ? '' : val}"
-        onchange="updateScore('${div}', ${p.idx}, ${d}, this.value)"></td>`;
+      const textVal = val === null ? '—' : (val > 0 ? `+${val}` : `${val}`);
+      cells += `<td class="${cls}">${textVal}</td>`;
     }
     let tieTag = '';
     if(rank < sorted.length - 1){
@@ -1172,17 +1099,9 @@ function renderDivision(div){
       <td class="name">${p.name}${tieTag}</td>
       ${cells}
       <td class="total">${p.total}</td>
-      <td><div class="row-btns">
-        <button class="del-x-btn" onclick="renameParticipant('${div}', ${p.idx})" title="Renomear">✎</button>
-        <button class="del-x-btn" onclick="removeParticipant('${div}', ${p.idx})" title="Remover">✕</button>
-      </div></td>
     </tr>`;
   }).join('');
 }
-
-/* ---------------------------------------------------------------------
-   Formulário de lançamento do dia (aba "Preencher")
-   --------------------------------------------------------------------- */
 
 function switchLaunchTab(tab){
   const formView = document.getElementById('launch-view-form');
@@ -1347,7 +1266,7 @@ function render(){
   renderDivision('y');
   populateDaySelect();
   renderLaunchForm();
-  updateStatsPanel(); // Atualiza os contadores do painel estatístico
+  updateStatsPanel();
   bindDragScroll();
   generateSummary();
 }
