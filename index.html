@@ -1,594 +1,1335 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sistema Integrado | Gestão & Ranking</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
-    
-    <style>
-        .loader {
-            border: 3px solid #f3f3f3; border-top: 3px solid #3b82f6;
-            border-radius: 50%; width: 20px; height: 20px;
-            animation: spin 1s linear infinite; display: inline-block; vertical-align: middle;
-        }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-        .hidden { display: none !important; }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ranking — Faixa X / Faixa Y</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg: #12161d;
+    --panel: #1a2029;
+    --panel-2: #212938;
+    --panel-3: #262f40;
+    --line: #2a3242;
+    --text: #e7ecf2;
+    --muted: #8892a3;
+    --x-color: #2fd8a8;
+    --x-dim: #1a4a3f;
+    --y-color: #f5a83c;
+    --y-dim: #4a3a1a;
+    --neg: #ef5f6f;
+    --pos: #2fd8a8;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:var(--bg);
+    color:var(--text);
+    font-family:'IBM Plex Mono', monospace;
+    padding:24px 16px 60px;
+  }
+  :focus-visible{ outline:2px solid var(--x-color); outline-offset:2px; }
 
-        #settingsSidebar {
-            transform: translateX(100%);
-            transition: transform 0.3s ease-in-out;
-        }
-        #settingsSidebar.open {
-            transform: translateX(0);
-        }
+  .top{ max-width:1200px; margin:0 auto 22px; text-align:center; }
+  h1{
+    font-family:'Oswald',sans-serif;
+    font-weight:700;
+    text-transform:uppercase;
+    letter-spacing:0.06em;
+    font-size:clamp(22px,5vw,34px);
+    margin:0 0 4px;
+  }
+  .subtitle{ color:var(--muted); font-size:12.5px; letter-spacing:0.03em; }
+  .status-line{
+    margin-top:8px; font-size:11px; color:var(--muted);
+    display:inline-flex; align-items:center; gap:6px;
+  }
+  .status-dot{ width:7px; height:7px; border-radius:50%; background:var(--x-color); display:inline-block; }
 
-        /* VARIÁVEIS GLOBAIS DE TEMA (LIGHT & DARK AUTOMÁTICO) */
-        :root {
-            --app-bg: #f1f5f9;
-            --surface: #ffffff;
-            --surface-alt: #f8fafc;
-            --panel-2: #f1f5f9;
-            --line: #e2e8f0;
-            --text: #1e293b;
-            --muted: #64748b;
-            --x-color: #0284c7;
-            --x-dim: #bae6fd;
-            --y-color: #d97706;
-            --y-dim: #fde68a;
-            --neg: #ef4444;
-            --pos: #10b981;
-            --input-bg: #ffffff;
-            --table-head: #f8fafc;
-        }
+  /* ---------- Painéis genéricos ---------- */
+  .panel{
+    max-width:1200px; margin:0 auto 20px;
+    background:var(--panel); border:1px solid var(--line); border-radius:12px;
+    padding:18px 20px;
+  }
+  .panel.accent-x{ border-top:3px solid var(--x-color); }
+  .panel.accent-y{ border-top:3px solid var(--y-color); }
+  .panel-title{
+    font-family:'Oswald',sans-serif; font-weight:600; text-transform:uppercase;
+    letter-spacing:0.05em; font-size:14.5px; margin-bottom:4px;
+    display:flex; align-items:center; gap:8px; flex-wrap:wrap;
+  }
+  .panel-title .day-tag{
+    font-family:'IBM Plex Mono', monospace; text-transform:none; letter-spacing:0;
+    font-weight:500; font-size:11.5px; color:var(--muted);
+    background:var(--panel-2); border:1px solid var(--line); border-radius:20px; padding:2px 10px;
+  }
+  .panel-hint{ color:var(--muted); font-size:11.5px; margin-bottom:14px; line-height:1.55; }
 
-        @media (prefers-color-scheme: dark) {
-            :root {
-                --app-bg: #0f172a; /* Fundo geral da página escuro */
-                --surface: #1e293b; /* Blocos e cartões escuros */
-                --surface-alt: #0f172a;
-                --panel-2: #0f172a;
-                --line: #334155;
-                --text: #f1f5f9;
-                --muted: #94a3b8;
-                --x-dim: #0369a1;
-                --y-dim: #92400e;
-                --input-bg: #0f172a;
-                --table-head: #1e293b;
-            }
-        }
+  /* ---------- Lançar dia: abas ---------- */
+  .launch-tabs{ display:flex; gap:6px; margin-bottom:16px; }
+  .launch-tab{
+    background:var(--panel-2); border:1px solid var(--line); color:var(--muted);
+    padding:8px 14px; border-radius:8px; font-family:'IBM Plex Mono', monospace;
+    font-size:12px; font-weight:600; cursor:pointer;
+  }
+  .launch-tab.active{ color:var(--text); border-color:var(--x-color); background:rgba(47,216,168,0.10); }
+  .launch-tab:hover{ border-color:var(--x-color); }
 
-        body {
-            background-color: var(--app-bg) !important;
-            color: var(--text) !important;
-            font-family: 'IBM Plex Mono', monospace;
-        }
+  .launch-columns{ display:grid; grid-template-columns:1fr 1fr; gap:26px; }
+  @media (max-width:760px){ .launch-columns{ grid-template-columns:1fr; gap:20px; } }
 
-        #ranking-app {
-            background: transparent; color: var(--text);
-            width: 100%; margin-top: 10px;
-        }
-        
-        #ranking-app :focus-visible { outline: 2px solid var(--x-color); outline-offset: 2px; }
-        #ranking-app .top { width: 100%; margin: 0 auto 22px; text-align: center; }
-        #ranking-app h1 { font-family: 'Oswald', sans-serif; font-weight: 700; text-transform: uppercase; font-size: clamp(22px,5vw,30px); margin: 0 0 4px; color: var(--text); }
-        #ranking-app .subtitle { color: var(--muted); font-size: 13px; }
-        #ranking-app .status-line { margin-top: 8px; font-size: 11px; color: var(--muted); display: inline-flex; align-items: center; gap: 6px; }
-        #ranking-app .status-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--x-color); display: inline-block; }
-        
-        #ranking-app .panel { width: 100%; margin: 0 auto 20px; background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 18px 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
-        #ranking-app .panel.accent-x { border-top: 3px solid var(--x-color); }
-        #ranking-app .panel.accent-y { border-top: 3px solid var(--y-color); }
-        #ranking-app .panel-title { font-family: 'Oswald', sans-serif; font-weight: 600; text-transform: uppercase; font-size: 15px; display: flex; align-items: center; gap: 8px; color: var(--text); }
-        #ranking-app .panel-title .day-tag { font-family: 'IBM Plex Mono', monospace; font-size: 11.5px; color: var(--muted); background: var(--panel-2); border: 1px solid var(--line); border-radius: 20px; padding: 2px 10px; }
-        
-        #ranking-app .launch-tabs { display: flex; gap: 6px; margin-bottom: 16px; }
-        #ranking-app .launch-tab { background: var(--surface-alt); border: 1px solid var(--line); color: var(--muted); padding: 8px 14px; border-radius: 8px; font-weight: 600; cursor: pointer; transition: all 0.2s;}
-        #ranking-app .launch-tab.active { color: var(--x-color); border-color: var(--x-color); background: var(--surface); }
-        #ranking-app .launch-columns { display: grid; grid-template-columns: 1fr 1fr; gap: 26px; }
-        @media (max-width:760px){ #ranking-app .launch-columns{ grid-template-columns: 1fr; } }
-        
-        #ranking-app .launch-col-head { display: flex; justify-content: space-between; border-bottom: 1px solid var(--line); padding-bottom: 8px; }
-        #ranking-app .launch-col-title { font-family: 'Oswald', sans-serif; font-weight: 600; text-transform: uppercase; font-size: 13px; }
-        #ranking-app .launch-col.x .launch-col-title { color: var(--x-color); }
-        #ranking-app .launch-col.y .launch-col-title { color: var(--y-color); }
-        
-        #ranking-app .launch-row { display: flex; align-items: center; gap: 10px; padding: 7px 0; border-bottom: 1px solid var(--line); font-size: 13px; }
-        #ranking-app .launch-input { width: 66px; background: var(--input-bg); border: 1px solid var(--line); border-radius: 6px; color: var(--text); text-align: center; padding: 7px 4px; font-weight: 600;}
-        #ranking-app .launch-input.val-pos { color: var(--pos); border-color: var(--x-dim); }
-        #ranking-app .launch-input.val-neg { color: var(--neg); border-color: var(--line); }
-        
-        #ranking-app .launch-name-input { flex: 1; background: var(--input-bg); border: 1px dashed var(--muted); border-radius: 6px; color: var(--text); padding: 7px 9px; }
-        #ranking-app .launch-submit { background: var(--x-color); color: #ffffff; font-weight: 700; padding: 10px 22px; border-radius: 8px; cursor: pointer; border: none; transition: 0.2s;}
-        #ranking-app .launch-submit:hover { opacity: 0.9; }
-        #ranking-app textarea { background: var(--input-bg); border: 1px solid var(--line); border-radius: 6px; color: var(--text); padding: 10px; width: 100%; min-height: 100px; }
-        
-        #ranking-app .board { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; width: 100%; margin: 0 auto 20px; }
-        @media (max-width:880px){ #ranking-app .board{grid-template-columns:1fr;} }
-        #ranking-app .division { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.05);}
-        #ranking-app .division-head { padding: 14px 16px; display: flex; justify-content: space-between; border-bottom: 1px solid var(--line); background: var(--surface);}
-        #ranking-app .division.x .division-head { border-top: 3px solid var(--x-color); }
-        #ranking-app .division.y .division-head { border-top: 3px solid var(--y-color); }
-        #ranking-app .division-title { font-family: 'Oswald', sans-serif; font-weight: 600; text-transform: uppercase; font-size: 15px; }
-        #ranking-app .division.x .division-title { color: var(--x-color); }
-        #ranking-app .division.y .division-title { color: var(--y-color); }
-        
-        #ranking-app .table-wrap { overflow-x: auto; }
-        #ranking-app table { border-collapse: collapse; width: 100%; font-size: 13px; }
-        #ranking-app th, #ranking-app td { padding: 8px 10px; text-align: center; border-bottom: 1px solid var(--line); white-space: nowrap; }
-        #ranking-app th { color: var(--muted); font-size: 11px; text-transform: uppercase; position: sticky; top: 0; background: var(--table-head); }
-        #ranking-app td.name { text-align: left; font-weight: 600; min-width: 110px; position: sticky; left: 34px; background: var(--surface); z-index: 2; box-shadow: 2px 0 4px rgba(0,0,0,0.05); }
-        #ranking-app td.rank { font-weight: 700; color: var(--muted); width: 34px; position: sticky; left: 0; background: var(--surface); z-index: 2; }
-        #ranking-app input.score { width: 46px; background: var(--input-bg); border: 1px solid var(--line); border-radius: 5px; color: var(--text); text-align: center; padding: 4px 2px; font-weight: 500;}
-        
-        #ranking-app button:not(.launch-submit) { background: var(--surface-alt); color: var(--text); border: 1px solid var(--line); border-radius: 6px; padding: 7px 12px; cursor: pointer; font-weight: 500; font-size: 13px; transition: 0.2s;}
-        #ranking-app button:hover { border-color: var(--x-color); color: var(--x-color); }
-        #ranking-app button.danger:hover { border-color: var(--neg); color: var(--neg); }
-        #ranking-app select { background: var(--input-bg); color: var(--text); border: 1px solid var(--line); padding: 6px 8px; border-radius: 5px; }
-        #ranking-app .del-x-btn { background: none; border: none; padding: 0 4px; font-size: 14px; color: var(--muted);}
-        #ranking-app .del-x-btn:hover { color: var(--neg); }
+  .launch-col-head{
+    display:flex; align-items:center; justify-content:space-between;
+    margin-bottom:6px; padding-bottom:8px; border-bottom:1px solid var(--line);
+  }
+  .launch-col-title{
+    font-family:'Oswald',sans-serif; font-weight:600; text-transform:uppercase;
+    font-size:12.5px; letter-spacing:0.05em;
+  }
+  .launch-col.x .launch-col-title{ color:var(--x-color); }
+  .launch-col.y .launch-col-title{ color:var(--y-color); }
+  .launch-col-count{ color:var(--muted); font-size:10.5px; }
 
-        /* Classes de suporte dinâmico para containers externos */
-        .dynamic-card { background-color: var(--surface) !important; border-color: var(--line) !important; color: var(--text) !important; }
-    </style>
+  .launch-list{ max-height:400px; overflow-y:auto; padding-right:6px; scrollbar-width:thin; }
+  .launch-list::-webkit-scrollbar{ width:8px; }
+  .launch-list::-webkit-scrollbar-track{ background:transparent; }
+  .launch-list::-webkit-scrollbar-thumb{ background:var(--line); border-radius:6px; }
+
+  .launch-row{
+    display:flex; align-items:center; gap:10px; padding:7px 0;
+    border-bottom:1px solid var(--line); font-size:12.5px;
+  }
+  .launch-row:last-child{ border-bottom:none; }
+  .launch-name{ flex:1; font-weight:600; }
+  .launch-input{
+    width:66px; background:var(--panel-2); border:1px solid var(--line); border-radius:6px;
+    color:var(--text); text-align:center; font-family:'IBM Plex Mono', monospace; font-size:13px;
+    padding:7px 4px;
+  }
+  .launch-input:focus{ outline:1px solid var(--x-color); }
+  .launch-input.val-pos{ color:var(--pos); border-color:var(--x-dim); }
+  .launch-input.val-neg{ color:var(--neg); border-color:#4a2229; }
+
+  .launch-row-new{ padding-top:8px; }
+  .launch-name-input{
+    flex:1; min-width:0; background:var(--panel-2); border:1px dashed var(--line); border-radius:6px;
+    color:var(--text); font-family:'IBM Plex Mono', monospace; font-size:12.5px; padding:7px 9px;
+  }
+  .launch-add-row{ margin-top:10px; }
+  .launch-add-row button{ font-size:11px; padding:6px 10px; }
+
+  .launch-footer{
+    display:flex; align-items:center; justify-content:space-between; gap:12px;
+    margin-top:18px; padding-top:14px; border-top:1px dashed var(--line); flex-wrap:wrap;
+  }
+  .launch-progress{ color:var(--muted); font-size:11.5px; }
+  .launch-submit{
+    background:var(--x-color); color:#0b1310; border:1px solid var(--x-color); font-weight:700;
+    padding:10px 22px; border-radius:8px; font-size:12.5px; letter-spacing:0.03em; cursor:pointer;
+  }
+  .launch-submit:hover{ filter:brightness(1.08); }
+
+  /* ---------- Colar ---------- */
+  #paste-area{
+    width:100%; min-height:100px; resize:vertical;
+    background:var(--panel-2); border:1px solid var(--line); border-radius:6px;
+    color:var(--text); font-family:'IBM Plex Mono', monospace; font-size:12.5px;
+    padding:10px; line-height:1.6;
+  }
+  .paste-actions{ margin-top:10px; display:flex; gap:8px; }
+
+  .pending-panel{
+    margin-top:16px; background:var(--panel-2); border:1px solid var(--y-color); border-radius:10px;
+    padding:14px 16px;
+  }
+  .pending-title{
+    font-family:'Oswald',sans-serif; font-weight:600; text-transform:uppercase;
+    letter-spacing:0.05em; font-size:13px; margin-bottom:10px; color:var(--y-color);
+  }
+  .pending-row{
+    display:flex; align-items:center; gap:10px; padding:6px 0;
+    border-bottom:1px solid var(--line); font-size:12.5px;
+  }
+  .pending-row .pname{ flex:1; font-weight:600; }
+  .pending-row .pval{ width:50px; text-align:right; }
+  .pending-row .pval.val-pos{ color:var(--pos); }
+  .pending-row .pval.val-neg{ color:var(--neg); }
+  .pending-row select{
+    background:var(--panel-3); color:var(--text); border:1px solid var(--line);
+    border-radius:5px; font-family:'IBM Plex Mono', monospace; font-size:12px; padding:4px 6px;
+  }
+  .pending-row .tag-known{ color:var(--muted); font-size:10.5px; min-width:76px; text-align:right; white-space:nowrap; }
+  .pending-actions{ margin-top:12px; display:flex; gap:8px; }
+  .pending-controls{
+    display:flex; gap:18px; flex-wrap:wrap; align-items:center;
+    margin-bottom:12px; padding-bottom:12px; border-bottom:1px dashed var(--line);
+    font-size:12px; color:var(--muted);
+  }
+  .pending-controls select{
+    background:var(--panel-3); color:var(--text); border:1px solid var(--line);
+    border-radius:5px; font-family:'IBM Plex Mono', monospace; font-size:12px;
+    padding:5px 7px; margin-left:6px;
+  }
+
+  /* ---------- Board de ranking ---------- */
+  .board{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:20px;
+    max-width:1200px;
+    margin:0 auto 20px;
+  }
+  @media (max-width:880px){ .board{grid-template-columns:1fr;} }
+
+  .division{
+    background:var(--panel);
+    border:1px solid var(--line);
+    border-radius:10px;
+    overflow:hidden;
+  }
+  .division-head{
+    padding:14px 16px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    border-bottom:1px solid var(--line);
+  }
+  .division.x .division-head{ border-top:3px solid var(--x-color); }
+  .division.y .division-head{ border-top:3px solid var(--y-color); }
+  .division-title{
+    font-family:'Oswald',sans-serif;
+    font-weight:600;
+    text-transform:uppercase;
+    letter-spacing:0.05em;
+    font-size:15px;
+  }
+  .division.x .division-title{ color:var(--x-color); }
+  .division.y .division-title{ color:var(--y-color); }
+  .division-range{ color:var(--muted); font-size:11px; }
+
+  .table-wrap{
+    overflow-x:auto;
+    cursor:grab;
+    scrollbar-width:thin;
+    scrollbar-color:var(--x-color) var(--panel-2);
+  }
+  .table-wrap.dragging{ cursor:grabbing; user-select:none; }
+  .table-wrap::-webkit-scrollbar{ height:10px; }
+  .table-wrap::-webkit-scrollbar-track{ background:var(--panel-2); border-radius:6px; }
+  .table-wrap::-webkit-scrollbar-thumb{ background:var(--line); border-radius:6px; }
+  .division.x .table-wrap::-webkit-scrollbar-thumb{ background:var(--x-dim); }
+  .division.y .table-wrap::-webkit-scrollbar-thumb{ background:var(--y-dim); }
+  .table-wrap::-webkit-scrollbar-thumb:hover{ background:var(--x-color); }
+  table{ border-collapse:collapse; width:100%; font-size:12.5px; }
+  th,td{ padding:8px 10px; text-align:center; border-bottom:1px solid var(--line); white-space:nowrap; }
+  th{
+    color:var(--muted);
+    font-weight:500;
+    font-size:10.5px;
+    text-transform:uppercase;
+    letter-spacing:0.04em;
+    position:sticky; top:0; background:var(--panel);
+  }
+  tbody tr:hover td{ background:var(--panel-2); }
+  td.name{
+    text-align:left; font-weight:600; min-width:110px;
+    position:sticky; left:34px; z-index:2; background:var(--panel);
+    box-shadow:2px 0 4px rgba(0,0,0,0.35);
+  }
+  tbody tr:hover td.name, tbody tr:hover td.rank{ background:var(--panel-2); }
+  td.rank{
+    font-family:'Oswald',sans-serif; font-weight:700; color:var(--muted); width:34px;
+    position:sticky; left:0; z-index:2; background:var(--panel);
+  }
+  th.rank-h{ position:sticky; left:0; top:0; z-index:5; background:var(--panel); }
+  th.name-h{
+    position:sticky; left:34px; top:0; z-index:5; background:var(--panel);
+    box-shadow:2px 0 4px rgba(0,0,0,0.35);
+  }
+  tr.top1 td.rank{ color:#ffd35c; }
+  tr.top2 td.rank{ color:#cfd6e0; }
+  tr.top3 td.rank{ color:#d99a5c; }
+  tr.top1 td.name::before{ content:'🥇 '; }
+  tr.top2 td.name::before{ content:'🥈 '; }
+  tr.top3 td.name::before{ content:'🥉 '; }
+  td.total{ font-weight:700; }
+  .row-btns{ display:flex; gap:4px; justify-content:center; }
+  input.score{
+    width:46px;
+    background:var(--panel-2);
+    border:1px solid var(--line);
+    border-radius:5px;
+    color:var(--text);
+    text-align:center;
+    font-family:'IBM Plex Mono', monospace;
+    font-size:12px;
+    padding:4px 2px;
+  }
+  input.score:focus{ outline:1px solid var(--x-color); }
+  .val-pos{ color:var(--pos); }
+  .val-neg{ color:var(--neg); }
+  .tiebadge{
+    display:inline-block;
+    margin-left:6px;
+    font-size:9.5px;
+    color:var(--muted);
+    border:1px solid var(--line);
+    border-radius:4px;
+    padding:1px 5px;
+  }
+  .row-actions{ padding:10px 16px; display:flex; gap:8px; border-top:1px solid var(--line); flex-wrap:wrap; }
+  button{
+    background:var(--panel-2);
+    color:var(--text);
+    border:1px solid var(--line);
+    border-radius:6px;
+    padding:7px 12px;
+    font-family:'IBM Plex Mono', monospace;
+    font-size:11.5px;
+    cursor:pointer;
+  }
+  button:hover{ border-color:var(--x-color); }
+  .division.y button:hover{ border-color:var(--y-color); }
+  button.danger:hover{ border-color:var(--neg); }
+  .global-actions{
+    max-width:1200px; margin:16px auto 0;
+    display:flex; justify-content:center; gap:10px; flex-wrap:wrap;
+  }
+  .del-x-btn{ background:none;border:none;color:var(--muted);cursor:pointer;font-size:14px;padding:0 4px; }
+  .del-x-btn:hover{ color:var(--neg); }
+  .empty-hint{ padding:16px; color:var(--muted); font-size:12px; text-align:center; }
+  .rules-note{
+    max-width:1200px; margin:26px auto 0; color:var(--muted); font-size:11px;
+    border-top:1px dashed var(--line); padding-top:14px; line-height:1.6;
+  }
+
+  /* ---------- Resumo ---------- */
+  .summary-row{ display:flex; align-items:center; gap:8px; flex-wrap:wrap; margin-bottom:12px; }
+  .summary-row label{ font-size:12px; color:var(--muted); }
+  .summary-row select{
+    background:var(--panel-2); color:var(--text); border:1px solid var(--line);
+    border-radius:5px; font-family:'IBM Plex Mono', monospace; font-size:12px; padding:6px 8px;
+  }
+  #summary-output{
+    width:100%; min-height:260px; resize:vertical;
+    background:var(--panel-2); border:1px solid var(--line); border-radius:6px;
+    color:var(--text); font-family:'IBM Plex Mono', monospace; font-size:12.5px;
+    padding:12px; line-height:1.55; white-space:pre-wrap;
+  }
+  .copy-flash{ color:var(--pos) !important; border-color:var(--pos) !important; }
+
+  /* ---------- Autenticação e cabeçalho do painel (multi-tenant) ---------- */
+  .hidden{ display:none !important; }
+
+  .auth-wrapper{
+    min-height:100vh; display:flex; align-items:center; justify-content:center; padding:24px 16px;
+  }
+  .auth-card{ max-width:420px; width:100%; }
+  .auth-brand{ text-align:center; margin-bottom:18px; }
+  .auth-brand-title{
+    font-family:'Oswald',sans-serif; font-weight:700; text-transform:uppercase;
+    letter-spacing:0.06em; font-size:22px; margin:0 0 4px;
+  }
+  .auth-brand-sub{ color:var(--muted); font-size:11.5px; letter-spacing:0.02em; }
+  .auth-card .launch-tab{ flex:1; text-align:center; }
+  .auth-form{ display:flex; flex-direction:column; gap:14px; }
+  .auth-form .launch-submit{ width:100%; }
+  .launch-submit:disabled{ opacity:0.6; cursor:not-allowed; filter:none; }
+  .campo{ display:flex; flex-direction:column; gap:6px; font-size:11.5px; color:var(--muted); }
+  .campo input{
+    background:var(--panel-2); border:1px solid var(--line); border-radius:6px;
+    color:var(--text); font-family:'IBM Plex Mono', monospace; font-size:13px; padding:10px 11px;
+    width:100%;
+  }
+  .campo input:focus{ outline:1px solid var(--x-color); }
+  .auth-secondary{ align-self:center; color:var(--muted); font-size:11px; padding:7px 10px; }
+  .auth-msg{
+    margin-top:16px; padding:10px 12px; border-radius:8px; font-size:12px; line-height:1.5;
+    border:1px solid var(--line);
+  }
+  .auth-msg.ok{ border-color:var(--pos); color:var(--pos); background:rgba(47,216,168,0.08); }
+  .auth-msg.erro{ border-color:var(--neg); color:var(--neg); background:rgba(239,95,111,0.08); }
+
+  .dash-header{ background:var(--panel); border-bottom:1px solid var(--line); margin:-24px -16px 22px; }
+  .dash-header-inner{
+    max-width:1200px; margin:0 auto; padding:14px 16px;
+    display:flex; align-items:center; justify-content:space-between; gap:14px; flex-wrap:wrap;
+  }
+  .dash-brand{ display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
+  .dash-brand-title{
+    font-family:'Oswald',sans-serif; font-weight:700; text-transform:uppercase;
+    letter-spacing:0.05em; font-size:14px;
+  }
+  .dash-group-name{
+    color:var(--muted); font-size:11.5px; background:var(--panel-2); border:1px solid var(--line);
+    border-radius:20px; padding:2px 10px;
+  }
+  .dash-user{ display:flex; align-items:center; gap:12px; flex-wrap:wrap; }
+  .dash-sheet-link{
+    background:var(--panel-2); color:var(--text); border:1px solid var(--line); border-radius:6px;
+    padding:7px 12px; font-family:'IBM Plex Mono', monospace; font-size:11.5px; text-decoration:none;
+    display:inline-flex; align-items:center; gap:6px;
+  }
+  .dash-sheet-link:hover{ border-color:var(--x-color); }
+  .dash-user-name{ color:var(--muted); font-size:11px; }
+</style>
 </head>
-<body class="min-h-screen">
+<body>
 
-    <!-- NAVBAR -->
-    <nav class="bg-blue-700 text-white shadow-md p-4 sticky top-0 z-40">
-        <div class="max-w-7xl mx-auto flex justify-between items-center">
-            <h1 class="text-xl font-bold tracking-wide m-0">AppManager</h1>
-            <div class="flex items-center gap-3">
-                <button id="btnOpenSidebar" onclick="toggleSidebar(true)" class="hidden bg-blue-600 hover:bg-blue-800 px-3.5 py-2 rounded text-sm font-bold transition flex items-center gap-2 border border-blue-500 text-white">
-                    ⚙️ Configurações & Grupo
-                </button>
-                <button id="btnLogout" class="hidden hover:bg-blue-800 px-3.5 py-2 rounded text-sm font-bold transition text-white">Sair</button>
-            </div>
-        </div>
-    </nav>
-
-    <!-- SIDEBAR DE CONFIGURAÇÕES E PARTICIPANTES -->
-    <div id="settingsSidebar" class="fixed inset-y-0 right-0 w-full sm:w-96 shadow-2xl z-50 p-6 overflow-y-auto border-l dynamic-card">
-        <div class="flex justify-between items-center mb-6 border-b border-slate-200 dark:border-slate-700 pb-4">
-            <h3 class="text-xl font-bold">Painel de Configuração</h3>
-            <button onclick="toggleSidebar(false)" class="text-slate-400 hover:text-slate-200 text-xl font-bold p-1 border-0 bg-transparent">✕</button>
-        </div>
-
-        <div class="space-y-6">
-            <!-- Conta do Usuário -->
-            <div class="p-4 rounded-xl border border-slate-200 dark:border-slate-700" style="background:var(--surface-alt)">
-                <h4 class="font-bold text-sm mb-3 uppercase tracking-wider">Segurança da Conta</h4>
-                <p class="text-xs text-slate-400 mb-3">Atualize sua senha de acesso ao sistema.</p>
-                <input type="password" id="novaSenhaSidebar" placeholder="Nova senha (min. 6 caracteres)" class="w-full p-2.5 border border-slate-300 dark:border-slate-700 rounded-lg mb-3 text-sm outline-none" style="background:var(--input-bg); color:var(--text);" minlength="6">
-                <button onclick="salvarNovaSenhaSidebar()" class="w-full py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-bold transition flex justify-center items-center shadow-sm border-0">
-                    <span id="txtBtnSenhaSidebar">Alterar Senha</span><span id="loadBtnSenhaSidebar" class="loader hidden ml-2" style="width:14px;height:14px;border-width:2px;"></span>
-                </button>
-            </div>
-
-            <!-- Organização de Participantes / Grupo -->
-            <div class="p-4 rounded-xl border border-slate-200 dark:border-slate-700" style="background:var(--surface-alt)">
-                <h4 class="font-bold text-sm mb-2 uppercase tracking-wider">Organização do Grupo</h4>
-                <p class="text-xs text-slate-400 mb-4">Gerencie os links estruturais e a planilha integrada.</p>
-                
-                <div class="mb-3">
-                    <label class="block text-xs font-bold mb-1">Nome do Grupo</label>
-                    <input type="text" id="sidebarGrupoNome" class="w-full p-2.5 border border-slate-300 dark:border-slate-700 rounded-lg text-sm" style="background:var(--input-bg); color:var(--text);" readonly>
-                </div>
-                <div>
-                    <label class="block text-xs font-bold mb-1">Planilha de Destino</label>
-                    <a id="sidebarLinkPlanilha" href="#" target="_blank" class="block w-full text-center bg-indigo-600 hover:bg-indigo-700 text-white py-2.5 rounded-lg text-sm font-bold transition shadow-sm">
-                        🔗 Abrir no Google Sheets
-                    </a>
-                </div>
-            </div>
-
-            <!-- Gestão Rápida de Participantes -->
-            <div class="p-4 rounded-xl border border-slate-200 dark:border-slate-700" style="background:var(--surface-alt)">
-                <h4 class="font-bold text-sm mb-2 uppercase tracking-wider">Adicionar Participantes</h4>
-                <p class="text-xs text-slate-400 mb-3">Insira rapidamente novos nomes direto nas faixas.</p>
-                <div class="flex gap-2">
-                    <button onclick="addParticipant('x')" class="flex-1 py-2 rounded-lg text-sm font-bold"> + Faixa X</button>
-                    <button onclick="addParticipant('y')" class="flex-1 py-2 rounded-lg text-sm font-bold"> + Faixa Y</button>
-                </div>
-            </div>
-        </div>
-    </div>
-    <!-- Overlay da Sidebar -->
-    <div id="sidebarOverlay" onclick="toggleSidebar(false)" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-40"></div>
-
-    <!-- VIEWS DE AUTENTICAÇÃO -->
-    <div class="max-w-md mx-auto mt-16 p-8 rounded-xl shadow-lg border border-slate-200 dark:border-slate-700 dynamic-card" id="mainContainer">
-        <!-- LOGIN -->
-        <div id="viewLogin">
-            <h2 class="text-2xl font-bold mb-6 text-center">Acessar Conta</h2>
-            <form id="formLogin" class="space-y-4">
-                <div>
-                    <label class="block text-sm font-medium">E-mail</label>
-                    <input type="email" id="loginEmail" required class="w-full mt-1 p-2.5 border border-slate-300 dark:border-slate-700 rounded-lg outline-none" style="background:var(--input-bg); color:var(--text);">
-                </div>
-                <div>
-                    <label class="block text-sm font-medium">Senha</label>
-                    <input type="password" id="loginSenha" required class="w-full mt-1 p-2.5 border border-slate-300 dark:border-slate-700 rounded-lg outline-none" style="background:var(--input-bg); color:var(--text);">
-                </div>
-                <button type="submit" class="w-full bg-blue-600 text-white p-2.5 rounded-lg hover:bg-blue-700 font-bold transition flex justify-center items-center border-0 cursor-pointer">
-                    <span id="loginText">Entrar</span><span id="loginLoader" class="loader hidden ml-2"></span>
-                </button>
-            </form>
-            <div class="mt-6 flex justify-between text-sm">
-                <a href="#" onclick="switchView('viewRecover')" class="text-blue-500 hover:underline">Esqueceu a senha?</a>
-                <a href="#" onclick="switchView('viewRegister')" class="text-blue-500 hover:underline font-semibold">Criar nova conta</a>
-            </div>
-        </div>
-
-        <!-- CADASTRO -->
-        <div id="viewRegister" class="hidden">
-            <h2 class="text-2xl font-bold mb-6 text-center">Criar Nova Conta</h2>
-            <form id="formRegister" class="space-y-4">
-                <div><label class="block text-sm font-medium">Nome Completo</label><input type="text" id="regNome" required class="w-full mt-1 p-2.5 border border-slate-300 dark:border-slate-700 rounded-lg" style="background:var(--input-bg); color:var(--text);"></div>
-                <div><label class="block text-sm font-medium">Nome do Grupo</label><input type="text" id="regGrupo" required class="w-full mt-1 p-2.5 border border-slate-300 dark:border-slate-700 rounded-lg" style="background:var(--input-bg); color:var(--text);"></div>
-                <div><label class="block text-sm font-medium">E-mail</label><input type="email" id="regEmail" required class="w-full mt-1 p-2.5 border border-slate-300 dark:border-slate-700 rounded-lg" style="background:var(--input-bg); color:var(--text);"></div>
-                <div><label class="block text-sm font-medium">Senha</label><input type="password" id="regSenha" required minlength="6" class="w-full mt-1 p-2.5 border border-slate-300 dark:border-slate-700 rounded-lg" style="background:var(--input-bg); color:var(--text);"></div>
-                <button type="submit" class="w-full bg-emerald-600 text-white p-2.5 rounded-lg hover:bg-emerald-700 font-bold transition flex justify-center items-center border-0 cursor-pointer">
-                    <span id="regText">Cadastrar</span><span id="regLoader" class="loader hidden ml-2"></span>
-                </button>
-            </form>
-            <div class="mt-6 text-sm text-center"><a href="#" onclick="switchView('viewLogin')" class="text-blue-500 hover:underline">Voltar ao Login</a></div>
-        </div>
-
-        <!-- RECUPERAÇÃO -->
-        <div id="viewRecover" class="hidden">
-            <h2 class="text-2xl font-bold mb-6 text-center">Recuperar Senha</h2>
-            <form id="formRecover" class="space-y-4">
-                <div><label class="block text-sm font-medium">E-mail cadastrado</label><input type="email" id="recEmail" required class="w-full mt-1 p-2.5 border border-slate-300 dark:border-slate-700 rounded-lg" style="background:var(--input-bg); color:var(--text);"></div>
-                <button type="submit" class="w-full bg-amber-500 text-white p-2.5 rounded-lg hover:bg-amber-600 font-bold transition flex justify-center items-center border-0 cursor-pointer">
-                    <span id="recText">Enviar Senha</span><span id="recLoader" class="loader hidden ml-2"></span>
-                </button>
-            </form>
-            <div class="mt-6 text-sm text-center"><a href="#" onclick="switchView('viewLogin')" class="text-blue-500 hover:underline">Voltar</a></div>
-        </div>
+<div id="tela-auth" class="auth-wrapper">
+  <div class="panel accent-x auth-card">
+    <div class="auth-brand">
+      <div class="auth-brand-title">Ranking Geral</div>
+      <div class="auth-brand-sub">Faixa X · Faixa Y — acesse o painel do seu grupo</div>
     </div>
 
-    <!-- DASHBOARD PRINCIPAL -->
-    <div id="viewDashboard" class="hidden max-w-7xl mx-auto mt-8 mb-12 px-4">
-        
-        <!-- Cabeçalho Limpo de Boas-Vindas -->
-        <div class="p-6 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 mb-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 dynamic-card">
-            <div>
-                <h2 class="text-3xl font-bold">Olá, <span id="dashNome" class="text-blue-500"></span></h2>
-                <p class="mt-1 text-sm font-medium opacity-80">Painel Operacional · Grupo: <span id="dashGrupo"></span></p>
-            </div>
-            <div class="text-xs bg-blue-500/10 text-blue-500 px-3 py-2 rounded-lg font-semibold border border-blue-500/20">
-                💡 Dica: Todos os lançamentos e edições de notas são feitos diretamente na tabela de Classificação abaixo.
-            </div>
-        </div>
-
-        <!-- SISTEMA DE RANKING INTEGRADO -->
-        <div id="ranking-app">
-            <div class="top">
-                <h1>Classificação Geral</h1>
-                <div class="subtitle">Acompanhamento de Resultados Operacionais</div>
-                <div class="status-line"><span class="status-dot" id="status-dot"></span><span id="sync-status">sincronizando dados...</span></div>
-            </div>
-
-            <!-- Tabela de Classificação -->
-            <div class="board">
-                <div class="division x" id="div-x">
-                    <div class="division-head"><div><div class="division-title">Faixa X</div></div></div>
-                    <div class="table-wrap"><table><thead><tr id="head-x"></tr></thead><tbody id="body-x"></tbody></table></div>
-                    <div style="padding:12px; background: var(--surface); border-top: 1px solid var(--line);"><button onclick="addParticipant('x')">+ Participante</button></div>
-                </div>
-
-                <div class="division y" id="div-y">
-                    <div class="division-head"><div><div class="division-title">Faixa Y</div></div></div>
-                    <div class="table-wrap"><table><thead><tr id="head-y"></tr></thead><tbody id="body-y"></tbody></table></div>
-                    <div style="padding:12px; background: var(--surface); border-top: 1px solid var(--line);"><button onclick="addParticipant('y')">+ Participante</button></div>
-                </div>
-            </div>
-
-            <!-- Gestão do Ranking (Painel Inferior) -->
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
-                <!-- Lançamento em Lote -->
-                <div class="panel accent-x" style="margin-bottom:0;">
-                    <div class="panel-title">Painel de Lançamento Admin <span class="day-tag" id="launch-day-label">Dia —</span></div>
-                    <div class="launch-tabs">
-                        <button type="button" class="launch-tab active" id="tab-form" onclick="switchLaunchTab('form')">✏️ Manual</button>
-                        <button type="button" class="launch-tab" id="tab-paste" onclick="switchLaunchTab('paste')">📋 Colar Dados</button>
-                    </div>
-
-                    <div id="launch-view-form">
-                        <div class="launch-columns">
-                            <div class="launch-col x">
-                                <div class="launch-col-head"><span class="launch-col-title">Faixa X</span><span class="launch-col-count text-xs font-bold opacity-60" id="launch-count-x"></span></div>
-                                <div class="launch-list" id="launch-list-x"></div>
-                                <div id="launch-new-x"></div>
-                                <div style="margin-top:10px"><button type="button" onclick="addDraftRow('x')" style="width:100%; border-style:dashed;">+ novo</button></div>
-                            </div>
-                            <div class="launch-col y">
-                                <div class="launch-col-head"><span class="launch-col-title">Faixa Y</span><span class="launch-col-count text-xs font-bold opacity-60" id="launch-count-y"></span></div>
-                                <div class="launch-list" id="launch-list-y"></div>
-                                <div id="launch-new-y"></div>
-                                <div style="margin-top:10px"><button type="button" onclick="addDraftRow('y')" style="width:100%; border-style:dashed;">+ novo</button></div>
-                            </div>
-                        </div>
-                        <div style="display:flex; justify-content:flex-end; align-items:center; margin-top:20px; border-top:1px solid var(--line); padding-top:16px;">
-                            <button type="button" class="launch-submit shadow-md" onclick="launchDayForm()">Processar Dia Completo</button>
-                        </div>
-                    </div>
-
-                    <div id="launch-view-paste" style="display:none;">
-                        <textarea id="paste-area" placeholder="Nome, 8;&#10;Nome2, -1;"></textarea>
-                        <div style="margin-top:10px;"><button onclick="processPaste()">Ler colagem</button></div>
-                        <div id="pending-panel" style="display:none; margin-top:16px; background:var(--panel-2); border:1px solid var(--y-color); padding:14px; border-radius:10px;">
-                            <div style="color:var(--y-color); font-weight:bold; margin-bottom:10px;">Confirmar lançamento:</div>
-                            <div class="flex gap-2 text-sm">
-                                <label>Dia: <select id="pending-day-select" class="ml-1"></select></label>
-                                <label>Forçar Faixa: <select id="pending-bulk-div" class="ml-1" onchange="applyBulkDiv(this.value)"><option value="">-</option><option value="x">X</option><option value="y">Y</option></select></label>
-                            </div>
-                            <div id="pending-list" class="mt-3 space-y-2"></div>
-                            <div style="margin-top:16px; display:flex; gap:8px;">
-                                <button onclick="confirmImport()" style="background:var(--x-color); color:white; border:none;">Confirmar Importação</button>
-                                <button class="danger" onclick="cancelImport()">Cancelar</button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Resumo e Controles -->
-                <div class="flex flex-col gap-6">
-                    <div class="panel accent-y" style="margin-bottom:0;">
-                        <div class="panel-title mb-4">Exportar Resumo</div>
-                        <div style="display:flex; gap:8px; margin-bottom:12px;">
-                            <select id="summary-day" onchange="generateSummary()" class="flex-1"></select>
-                            <button onclick="generateSummary()">Gerar</button>
-                            <button onclick="copySummary()" id="copy-btn" style="background:var(--text); color:var(--surface); border:none;">Copiar</button>
-                        </div>
-                        <textarea id="summary-output" readonly placeholder="O texto pronto para WhatsApp aparecerá aqui..." style="font-size:12px; height:120px;"></textarea>
-                    </div>
-
-                    <div class="panel border border-slate-200 dark:border-slate-700" style="margin-bottom:0;">
-                        <div class="panel-title mb-4 opacity-70">Controles do Banco de Dados</div>
-                        <div class="grid grid-cols-2 gap-3">
-                            <button onclick="addDay()">+ Dia Branco</button>
-                            <button onclick="removeLastDay()">− Último dia</button>
-                            <button class="col-span-2 danger" onclick="resetAll()">⚠️ Limpar Tudo (Reset)</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
+    <div class="launch-tabs">
+      <button type="button" class="launch-tab active" data-tela="login" onclick="mostrarTelaAuth('login')">Entrar</button>
+      <button type="button" class="launch-tab" data-tela="cadastro" onclick="mostrarTelaAuth('cadastro')">Criar conta</button>
     </div>
 
-    <script>
-        const API_URL = "https://script.google.com/macros/s/AKfycbxwd89rDxcpMYMLNVKAW9FrOOSsoHE7gXoPTCSECH1GDgYOfQRovYGhfvtgEZvsbxYw/exec";
-        function toggleSidebar(open) {
-            const sb = document.getElementById('settingsSidebar');
-            const ov = document.getElementById('sidebarOverlay');
-            if(open) {
-                sb.classList.add('open');
-                ov.classList.remove('hidden');
-            } else {
-                sb.classList.remove('open');
-                ov.classList.add('hidden');
-            }
-        }
+    <form id="form-login" class="auth-form" onsubmit="handleLogin(event)">
+      <label class="campo"><span>E-mail</span>
+        <input type="email" id="login-email" required autocomplete="email" placeholder="voce@empresa.com">
+      </label>
+      <label class="campo"><span>Senha</span>
+        <input type="password" id="login-senha" required autocomplete="current-password" placeholder="••••••••">
+      </label>
+      <button type="submit" class="launch-submit" id="login-btn">Entrar</button>
+      <button type="button" class="auth-secondary" onclick="mostrarTelaAuth('esqueci')">Esqueci minha senha</button>
+    </form>
 
-        function switchView(viewId) {
-            const views = ['viewLogin', 'viewRegister', 'viewRecover'];
-            document.getElementById('mainContainer').classList.remove('hidden');
-            document.getElementById('viewDashboard').classList.add('hidden');
-            document.getElementById('btnOpenSidebar').classList.add('hidden');
-            views.forEach(v => document.getElementById(v).classList.add('hidden'));
-            document.getElementById(viewId).classList.remove('hidden');
-        }
+    <form id="form-cadastro" class="auth-form hidden" onsubmit="handleCadastro(event)">
+      <label class="campo"><span>Nome completo</span>
+        <input type="text" id="cadastro-nome" required autocomplete="name" placeholder="Seu nome">
+      </label>
+      <label class="campo"><span>E-mail</span>
+        <input type="email" id="cadastro-email" required autocomplete="email" placeholder="voce@empresa.com">
+      </label>
+      <label class="campo"><span>Nome do grupo/empresa</span>
+        <input type="text" id="cadastro-grupo" required placeholder="Ex: Minha Equipe">
+      </label>
+      <label class="campo"><span>Senha</span>
+        <input type="password" id="cadastro-senha" required minlength="6" autocomplete="new-password" placeholder="Mínimo 6 caracteres">
+      </label>
+      <label class="campo"><span>Confirmar senha</span>
+        <input type="password" id="cadastro-senha-confirma" required minlength="6" autocomplete="new-password" placeholder="Repita a senha">
+      </label>
+      <button type="submit" class="launch-submit" id="cadastro-btn">Criar conta e gerar planilha do grupo</button>
+    </form>
 
-        async function fetchAPI(payload, btnTextId, loaderId) {
-            if(btnTextId) document.getElementById(btnTextId).classList.add('hidden');
-            if(loaderId) document.getElementById(loaderId).classList.remove('hidden');
-            try {
-                const response = await fetch(API_URL, { method: 'POST', body: JSON.stringify(payload) });
-                return await response.json();
-            } catch (error) {
-                console.error(error); return { success: false, message: 'Erro de conexão.' };
-            } finally {
-                if(btnTextId) document.getElementById(btnTextId).classList.remove('hidden');
-                if(loaderId) document.getElementById(loaderId).classList.add('hidden');
-            }
-        }
+    <form id="form-esqueci" class="auth-form hidden" onsubmit="handleEsqueciSenha(event)">
+      <p class="panel-hint">Informe o e-mail cadastrado. Se ele existir, enviaremos um código de verificação de 6 dígitos.</p>
+      <label class="campo"><span>E-mail</span>
+        <input type="email" id="esqueci-email" required placeholder="voce@empresa.com">
+      </label>
+      <button type="submit" class="launch-submit" id="esqueci-btn">Enviar código</button>
+      <button type="button" class="auth-secondary" onclick="mostrarTelaAuth('login')">Voltar ao login</button>
+    </form>
 
-        document.getElementById('formLogin').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const res = await fetchAPI({ action: 'login', email: document.getElementById('loginEmail').value, senha: document.getElementById('loginSenha').value }, 'loginText', 'loginLoader');
-            if (res.success) {
-                localStorage.setItem('sessionUser', JSON.stringify(res.user));
-                localStorage.setItem('sessionGroup', JSON.stringify(res.group));
-                showDashboard(res.user, res.group);
-            } else alert(res.message);
-        });
+    <form id="form-redefinir" class="auth-form hidden" onsubmit="handleRedefinirSenha(event)">
+      <p class="panel-hint">Digite o código de 6 dígitos enviado ao seu e-mail e escolha uma nova senha.</p>
+      <label class="campo"><span>Código</span>
+        <input type="text" id="redefinir-codigo" required maxlength="6" inputmode="numeric" placeholder="000000">
+      </label>
+      <label class="campo"><span>Nova senha</span>
+        <input type="password" id="redefinir-senha" required minlength="6" placeholder="Mínimo 6 caracteres">
+      </label>
+      <button type="submit" class="launch-submit" id="redefinir-btn">Redefinir senha</button>
+      <button type="button" class="auth-secondary" onclick="mostrarTelaAuth('login')">Voltar ao login</button>
+    </form>
 
-        document.getElementById('formRegister').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const payload = { action: 'register', nome: document.getElementById('regNome').value, grupo: document.getElementById('regGrupo').value, email: document.getElementById('regEmail').value, senha: document.getElementById('regSenha').value };
-            const res = await fetchAPI(payload, 'regText', 'regLoader');
-            if (res.success) { alert(res.message); switchView('viewLogin'); } else alert("ERRO: " + res.message);
-        });
+    <div id="auth-msg" class="auth-msg hidden"></div>
+  </div>
+</div>
 
-        document.getElementById('formRecover').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const res = await fetchAPI({ action: 'recover', email: document.getElementById('recEmail').value }, 'recText', 'recLoader');
-            alert(res.message); if(res.success) switchView('viewLogin');
-        });
+<div id="tela-dashboard" class="hidden">
+<div class="dash-header">
+  <div class="dash-header-inner">
+    <div class="dash-brand">
+      <span class="dash-brand-title">Ranking Geral</span>
+      <span class="dash-group-name" id="dash-nome-grupo">—</span>
+    </div>
+    <div class="dash-user">
+      <a id="dash-link-planilha" class="dash-sheet-link hidden" href="#" target="_blank" rel="noopener noreferrer">📊 Planilha do grupo</a>
+      <span class="dash-user-name" id="dash-nome-usuario">—</span>
+      <button type="button" onclick="handleLogout()">Sair</button>
+    </div>
+  </div>
+</div>
 
-        async function salvarNovaSenhaSidebar() {
-            const novaSenha = document.getElementById('novaSenhaSidebar').value;
-            if(novaSenha.length < 6) return alert("Mínimo de 6 caracteres.");
-            const u = JSON.parse(localStorage.getItem('sessionUser'));
-            const res = await fetchAPI({ action: 'changePassword', userId: u.id, email: u.email, novaSenha: novaSenha }, 'txtBtnSenhaSidebar', 'loadBtnSenhaSidebar');
-            alert(res.message);
-            if(res.success) {
-                document.getElementById('novaSenhaSidebar').value = '';
-                toggleSidebar(false);
-            }
-        }
+<div class="top">
+  <h1>Ranking Geral</h1>
+  <div class="subtitle">Faixa X (0 – 19.999M) · Faixa Y (20M ou mais) · maior pontuação vence, desempate pelo dia mais recente</div>
+  <div class="status-line"><span class="status-dot" id="status-dot"></span><span id="sync-status">carregando...</span></div>
+</div>
 
-        document.getElementById('btnLogout').addEventListener('click', () => {
-            localStorage.clear(); 
-            document.getElementById('btnLogout').classList.add('hidden'); 
-            document.getElementById('btnOpenSidebar').classList.add('hidden'); 
-            switchView('viewLogin');
-        });
+<div class="panel accent-x launch-card">
+  <div class="panel-title">Lançar pontuação do dia <span class="day-tag" id="launch-day-label">Dia —</span></div>
+  <div class="panel-hint">Preencha a pontuação de cada participante para fechar o dia, ou cole os dados prontos de outra fonte.</div>
 
-        window.onload = () => {
-            const user = localStorage.getItem('sessionUser'); 
-            const group = localStorage.getItem('sessionGroup');
-            if (user && group && user !== "undefined" && group !== "undefined") {
-                try {
-                    showDashboard(JSON.parse(user), JSON.parse(group));
-                } catch(e) {
-                    localStorage.clear();
-                    switchView('viewLogin');
-                }
-            } else {
-                localStorage.clear();
-                switchView('viewLogin');
-            }
-        };
+  <div class="launch-tabs">
+    <button type="button" class="launch-tab active" id="tab-form" onclick="switchLaunchTab('form')">✏️ Preencher</button>
+    <button type="button" class="launch-tab" id="tab-paste" onclick="switchLaunchTab('paste')">📋 Colar</button>
+  </div>
 
-        function showDashboard(user, group) {
-            document.getElementById('mainContainer').classList.add('hidden');
-            document.getElementById('viewDashboard').classList.remove('hidden');
-            document.getElementById('btnLogout').classList.remove('hidden');
-            document.getElementById('btnOpenSidebar').classList.remove('hidden');
-            document.getElementById('dashNome').innerText = user.nome;
-            document.getElementById('dashGrupo').innerText = group.nome;
-            document.getElementById('sidebarGrupoNome').value = group.nome;
-            document.getElementById('sidebarLinkPlanilha').href = group.planilhaUrl;
-            loadRankingState(); 
-        }
+  <div id="launch-view-form">
+    <div class="launch-columns">
+      <div class="launch-col x">
+        <div class="launch-col-head">
+          <span class="launch-col-title">Faixa X</span>
+          <span class="launch-col-count" id="launch-count-x"></span>
+        </div>
+        <div class="launch-list" id="launch-list-x"></div>
+        <div id="launch-new-x"></div>
+        <div class="launch-add-row"><button type="button" onclick="addDraftRow('x')">+ novo participante</button></div>
+      </div>
+      <div class="launch-col y">
+        <div class="launch-col-head">
+          <span class="launch-col-title">Faixa Y</span>
+          <span class="launch-col-count" id="launch-count-y"></span>
+        </div>
+        <div class="launch-list" id="launch-list-y"></div>
+        <div id="launch-new-y"></div>
+        <div class="launch-add-row"><button type="button" onclick="addDraftRow('y')">+ novo participante</button></div>
+      </div>
+    </div>
+    <div class="launch-footer">
+      <span class="launch-progress" id="launch-progress"></span>
+      <button type="button" class="launch-submit" id="launch-submit-btn" onclick="launchDayForm()">Lançar dia</button>
+    </div>
+  </div>
 
-        // --- SISTEMA DE RANKING ---
-        function buildDefaultState(){ return { days: 1, x: [], y: [] }; }
-        let state = buildDefaultState();
-        let loaded = false; let pendingImport = null;
-        let draft = { x:{}, y:{} }; let draftNew = { x:[], y:[] };
+  <div id="launch-view-paste" style="display:none;">
+    <div class="panel-hint" style="margin-top:0;">Um participante por vez, separados por <strong>ponto e vírgula</strong> ou por <strong>linha</strong>, no formato <strong>Nome, Pontuação</strong>. Exemplo: <em>João, 8; Maria, -1; Pedro, -1;</em> — também funciona colando um embaixo do outro. Depois de ler, escolha se é um dia novo ou se vai substituir um dia já lançado, e confira a faixa de cada participante antes de confirmar.</div>
+    <textarea id="paste-area" placeholder="João, 8;&#10;Maria, -1;&#10;Pedro, -1;"></textarea>
+    <div class="paste-actions">
+      <button onclick="processPaste()">Ler colagem</button>
+    </div>
+    <div class="pending-panel" id="pending-panel" style="display:none;">
+      <div class="pending-title">Confirmar lançamento dos dados colados</div>
+      <div class="pending-controls">
+        <label>Aplicar em: <select id="pending-day-select"></select></label>
+        <label>Faixa para todos: <select id="pending-bulk-div" onchange="applyBulkDiv(this.value)">
+          <option value="">— escolher —</option>
+          <option value="x">Faixa X</option>
+          <option value="y">Faixa Y</option>
+        </select></label>
+      </div>
+      <div id="pending-list"></div>
+      <div class="pending-actions">
+        <button onclick="confirmImport()">Lançar</button>
+        <button class="danger" onclick="cancelImport()">Cancelar</button>
+      </div>
+    </div>
+  </div>
+</div>
 
-        function setStatus(text, ok){
-            document.getElementById('sync-status').textContent = text;
-            document.getElementById('status-dot').style.background = ok === false ? 'var(--neg)' : (ok === 'busy' ? 'var(--y-color)' : 'var(--pos)');
-        }
+<div class="board">
+  <div class="division x" id="div-x">
+    <div class="division-head">
+      <div>
+        <div class="division-title">Faixa X</div>
+        <div class="division-range">0 a 19.999M</div>
+      </div>
+    </div>
+    <div class="table-wrap"><table><thead><tr id="head-x"></tr></thead><tbody id="body-x"></tbody></table></div>
+    <div class="empty-hint" id="empty-x" style="display:none;">Nenhum participante ainda.</div>
+    <div class="row-actions">
+      <button onclick="addParticipant('x')">+ Participante</button>
+      <button onclick="addDay()">+ Dia em branco</button>
+    </div>
+  </div>
 
-        async function loadRankingState() {
-            setStatus('lendo matriz...', 'busy');
-            const group = JSON.parse(localStorage.getItem('sessionGroup')); if(!group) return;
-            try {
-                const res = await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'loadRanking', planilhaId: group.planilhaId }) });
-                const data = await res.json();
-                if (data.success && data.state) state = data.state; else if (!data.state) state = buildDefaultState();
-                setStatus('sincronizado ✓', true);
-            } catch(e) { setStatus('erro de leitura', false); }
-            loaded = true; renderAll();
-        }
+  <div class="division y" id="div-y">
+    <div class="division-head">
+      <div>
+        <div class="division-title">Faixa Y</div>
+        <div class="division-range">20M ou mais</div>
+      </div>
+    </div>
+    <div class="table-wrap"><table><thead><tr id="head-y"></tr></thead><tbody id="body-y"></tbody></table></div>
+    <div class="empty-hint" id="empty-y" style="display:none;">Nenhum participante ainda.</div>
+    <div class="row-actions">
+      <button onclick="addParticipant('y')">+ Participante</button>
+      <button onclick="addDay()">+ Dia em branco</button>
+    </div>
+  </div>
+</div>
 
-        let saveTimeout = null;
-        function saveState(){ clearTimeout(saveTimeout); saveTimeout = setTimeout(syncToGoogleSheets, 2000); }
-        async function syncToGoogleSheets(){
-            setStatus('salvando...', 'busy');
-            const group = JSON.parse(localStorage.getItem('sessionGroup')); if(!group) return;
-            try {
-                const res = await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'saveRanking', planilhaId: group.planilhaId, state: state }) });
-                const data = await res.json();
-                if (data.success) setStatus('sincronizado ✓', true); else throw new Error();
-            } catch(e) { setStatus('erro ao salvar', false); }
-        }
+<div class="panel accent-y">
+  <div class="panel-title">Resumir dia / acumulado</div>
+  <div class="panel-hint">Gera o texto pronto pra postar, no mesmo formato que você já usa. Atualiza sozinho sempre que você lança um dia novo.</div>
+  <div class="summary-row">
+    <label>Dia: <select id="summary-day" onchange="generateSummary()"></select></label>
+    <button onclick="generateSummary()">Gerar resumo</button>
+    <button onclick="copySummary()" id="copy-btn">Copiar</button>
+  </div>
+  <textarea id="summary-output" readonly placeholder="O texto aparece aqui assim que houver ao menos um dia lançado..."></textarea>
+</div>
 
-        function total(p){ return p.scores.reduce((s,v)=> s + (v ?? 0), 0); }
-        function tiebreakDay(a,b){ for(let d=state.days-1; d>=0; d--){ if((a.scores[d]??0) !== (b.scores[d]??0)) return d; } return null; }
-        function sortDivision(div){
-            const list = state[div].map((p,i)=>({...p, idx:i, total: total(p)}));
-            list.sort((a,b)=>{ if(b.total !== a.total) return b.total - a.total; const d = tiebreakDay(a,b); return d===null ? 0 : (b.scores[d]??0)-(a.scores[d]??0); });
-            return list;
-        }
+<div class="global-actions">
+  <button onclick="removeLastDay()">− Remover último dia</button>
+  <button class="danger" onclick="resetAll()">Limpar tudo</button>
+</div>
 
-        function renderDivision(div){
-            const head = document.getElementById('head-'+div); const body = document.getElementById('body-'+div);
-            let h = '<th class="rank">#</th><th class="name">Nome</th>';
-            for(let d=0; d<state.days; d++) h += `<th>D${d+1}</th>`; h += '<th>Tot</th><th></th>'; head.innerHTML = h;
-            const sorted = sortDivision(div);
-            body.innerHTML = sorted.map((p, rank)=>{
-                let cells = '';
-                for(let d=0; d<state.days; d++){
-                    const val = p.scores[d]; const cls = val === null ? '' : (val < 0 ? 'val-neg' : 'val-pos');
-                    cells += `<td><input class="score ${cls}" value="${val===null?'':val}" onchange="updateScore('${div}', ${p.idx}, ${d}, this.value)"></td>`;
-                }
-                return `<tr><td class="rank">${rank+1}</td><td class="name">${p.name}</td>${cells}<td style="font-weight:900; color:var(--text);">${p.total}</td><td><button class="del-x-btn" onclick="state['${div}'].splice(${p.idx},1); saveState(); renderAll();">✕</button></td></tr>`;
-            }).join('');
-        }
+<div class="rules-note">
+  Regras aplicadas: ganho máximo diário +10 · critério 1 — maior pontuação acumulada · critério 2+ — compara o resultado do dia mais recente e retrocede um dia por vez até achar diferença · 0 > -1 > -2, um -2 nunca fica acima de um -1 no mesmo dia comparado.
+</div>
 
-        function updateScore(div, idx, dayIdx, value){
-            let num = value.trim() === '' ? null : parseFloat(value.replace(',','.')); if(num !== null && num > 10) num = 10;
-            state[div][idx].scores[dayIdx] = isNaN(num) ? null : num; saveState(); renderAll();
-        }
-        function addParticipant(div){ const n = prompt('Nome:'); if(n) { state[div].push({name:n, scores:Array(state.days).fill(null)}); saveState(); renderAll(); } }
-        function addDay(){ state.days++; state.x.forEach(p=>p.scores.push(null)); state.y.forEach(p=>p.scores.push(null)); saveState(); renderAll(); }
-        function removeLastDay(){ if(state.days>1){ state.days--; state.x.forEach(p=>p.scores.pop()); state.y.forEach(p=>p.scores.pop()); saveState(); renderAll(); } }
-        function resetAll(){ if(confirm('⚠️ ATENÇÃO: Isso apagará TODOS os dados nativos do ranking. Continuar?')){ state = {days:1, x:[], y:[]}; saveState(); renderAll(); } }
-        
-        function switchLaunchTab(t){
-            document.getElementById('launch-view-form').style.display = t==='form'?'':'none'; document.getElementById('launch-view-paste').style.display = t==='paste'?'':'none';
-            document.getElementById('tab-form').className = 'launch-tab ' + (t==='form'?'active':''); document.getElementById('tab-paste').className = 'launch-tab ' + (t==='paste'?'active':'');
-        }
-        function addDraftRow(div){ draftNew[div].push({name:'', value:''}); renderLaunchForm(); }
-        function renderLaunchForm(){
-            ['x','y'].forEach(div => {
-                document.getElementById('launch-list-'+div).innerHTML = state[div].map((p,i)=>`<div class="launch-row"><span style="flex:1">${p.name}</span><input class="launch-input" placeholder="-" oninput="draft.${div}[${i}]=this.value"></div>`).join('');
-                document.getElementById('launch-new-'+div).innerHTML = draftNew[div].map((r,i)=>`<div class="launch-row"><input class="launch-name-input" placeholder="Nome..." value="${r.name}" oninput="draftNew.${div}[${i}].name=this.value"><input class="launch-input" placeholder="pts" value="${r.value}" oninput="draftNew.${div}[${i}].value=this.value"></div>`).join('');
-                document.getElementById('launch-count-'+div).innerText = state[div].length + ' inscritos';
-            });
-            document.getElementById('launch-day-label').innerText = 'Dia ' + (state.days+1);
-        }
-        function launchDayForm(){
-            state.days++; const idx = state.days-1; state.x.forEach(p=>p.scores.push(null)); state.y.forEach(p=>p.scores.push(null));
-            ['x','y'].forEach(div => {
-                state[div].forEach((p,i)=>{ if(draft[div][i]) p.scores[idx] = parseFloat(draft[div][i].replace(',','.')); });
-                draftNew[div].forEach(r=>{ if(r.name && r.value) state[div].push({name:r.name, scores: Array(state.days).fill(null).map((_,i)=>i===idx?parseFloat(r.value.replace(',','.')):null)}); });
-            });
-            draft = {x:{}, y:{}}; draftNew={x:[], y:[]}; saveState(); renderAll();
-        }
-        function processPaste(){
-            const text = document.getElementById('paste-area').value;
-            const parsed = text.split(/[;\n]+/).map(s=>s.trim()).filter(Boolean).map(c=>{
-                const m = c.match(/^(.+)[,\s\t]+(-?\d+(?:[.,]\d+)?)\s*$/); return m ? {name:m[1].trim(), value: Math.min(parseFloat(m[2].replace(',','.')), 10)} : null;
-            }).filter(Boolean);
-            if(!parsed.length) return alert('Formato inválido. Use: Nome, Pontos');
-            pendingImport = parsed.map(e => ({...e, div: state.x.find(p=>p.name===e.name)?'x': state.y.find(p=>p.name===e.name)?'y':'x'}));
-            document.getElementById('pending-panel').style.display='block';
-            const sel = document.getElementById('pending-day-select'); sel.innerHTML = `<option value="new">Criar Novo Dia (${state.days+1})</option>`;
-            for(let d=state.days-1; d>=0; d--) sel.innerHTML += `<option value="${d}">Substituir Dia ${d+1}</option>`;
-            renderPending();
-        }
-        function renderPending(){ document.getElementById('pending-list').innerHTML = pendingImport.map((e,i)=>`<div style="display:flex; justify-content:space-between; align-items:center; background:var(--surface); padding:6px; border:1px solid var(--line); border-radius:4px;"><span class="font-bold">${e.name} <span class="text-emerald-500">(${e.value} pts)</span></span><select onchange="pendingImport[${i}].div=this.value" class="text-xs p-1 border"><option value="x" ${e.div==='x'?'selected':''}>Faixa X</option><option value="y" ${e.div==='y'?'selected':''}>Faixa Y</option></select></div>`).join(''); }
-        function applyBulkDiv(v){ if(v) {pendingImport.forEach(e=>e.div=v); renderPending();} }
-        function cancelImport(){ document.getElementById('pending-panel').style.display='none'; }
-        function confirmImport(){
-            const dayMode = document.getElementById('pending-day-select').value;
-            if(dayMode==='new'){ state.days++; state.x.forEach(p=>p.scores.push(null)); state.y.forEach(p=>p.scores.push(null)); }
-            const targetDay = dayMode==='new' ? state.days-1 : parseInt(dayMode);
-            pendingImport.forEach(e => {
-                let p = state[e.div].find(x=>x.name===e.name);
-                if(!p) { p = {name:e.name, scores:Array(state.days).fill(null)}; state[e.div].push(p); }
-                p.scores[targetDay] = e.value;
-            });
-            document.getElementById('pending-panel').style.display='none'; document.getElementById('paste-area').value=''; switchLaunchTab('form'); saveState(); renderAll();
-        }
-        function generateSummary(){
-            const out = document.getElementById('summary-output'); const sel = document.getElementById('summary-day');
-            if(state.days===0){ out.value=''; sel.innerHTML=''; return; }
-            if(sel.options.length !== state.days) { sel.innerHTML=''; for(let d=0; d<state.days; d++) sel.innerHTML+=`<option value="${d}">Dia ${d+1}</option>`; sel.value = state.days-1; }
-            const day = parseInt(sel.value);
-            out.value = `🏆 RANKING DIA ${day+1}\n\n` + `X:\n` + sortDivision('x').filter(p=>p.scores[day]!=null).map((p,i)=>`${i+1}° ${p.name} (${p.scores[day]})`).join('\n') + `\n\n` + `Y:\n` + sortDivision('y').filter(p=>p.scores[day]!=null).map((p,i)=>`${i+1}° ${p.name} (${p.scores[day]})`).join('\n');
-        }
-        function copySummary(){ const el = document.getElementById('summary-output'); el.select(); document.execCommand('copy'); const btn = document.getElementById('copy-btn'); btn.innerText='Copiado!'; setTimeout(()=>btn.innerText='Copiar', 1500); }
-        function renderAll(){ if(!loaded) return; renderDivision('x'); renderDivision('y'); renderLaunchForm(); generateSummary(); }
-    </script>
+</div><!-- /#tela-dashboard -->
+
+<script>
+/* ======================================================================
+   CONFIGURAÇÃO DA API (Google Apps Script)
+   Cole aqui a URL gerada ao implantar o Code.gs como Web App (veja o guia).
+   ====================================================================== */
+const API_URL = 'https://script.google.com/macros/s/AKfycby_GcEw4x5C5BpBfVKRXtfe-ULbVbglk4-6G9Et-XldUEuSjKXtCBfAD1zFZ3BL7EY47w/exec';
+
+let usuarioAtual = null;
+let emailRecuperacaoAtual = '';
+
+async function chamarAPI(payload){
+  const resposta = await fetch(API_URL, { method: 'POST', body: JSON.stringify(payload) });
+  if(!resposta.ok) throw new Error('Erro de rede (HTTP ' + resposta.status + ')');
+  return resposta.json();
+}
+
+async function chamarAPIGet(params){
+  const query = new URLSearchParams(params).toString();
+  const resposta = await fetch(API_URL + '?' + query);
+  if(!resposta.ok) throw new Error('Erro de rede (HTTP ' + resposta.status + ')');
+  return resposta.json();
+}
+
+function mostrarMensagemAuth(texto, ok){
+  const el = document.getElementById('auth-msg');
+  el.textContent = texto;
+  el.classList.remove('hidden', 'ok', 'erro');
+  el.classList.add(ok ? 'ok' : 'erro');
+}
+function esconderMensagemAuth(){
+  document.getElementById('auth-msg').classList.add('hidden');
+}
+function definirCarregando(btn, carregando, textoNormal){
+  btn.disabled = carregando;
+  btn.textContent = carregando ? 'Aguarde...' : textoNormal;
+}
+
+function mostrarTelaAuth(nome){
+  ['login','cadastro','esqueci','redefinir'].forEach(function(n){
+    document.getElementById('form-' + n).classList.toggle('hidden', n !== nome);
+  });
+  document.querySelectorAll('.launch-tab[data-tela]').forEach(function(btn){
+    btn.classList.toggle('active', btn.dataset.tela === nome);
+  });
+  esconderMensagemAuth();
+}
+
+function mostrarDashboard(dados){
+  usuarioAtual = dados;
+  document.getElementById('tela-auth').classList.add('hidden');
+  document.getElementById('tela-dashboard').classList.remove('hidden');
+  document.getElementById('dash-nome-grupo').textContent = dados.grupo ? dados.grupo.nomeGrupo : '—';
+  document.getElementById('dash-nome-usuario').textContent = dados.nome + ' · ' + dados.status;
+  const linkPlanilha = document.getElementById('dash-link-planilha');
+  if(dados.grupo && dados.grupo.urlPlanilhaGrupo){
+    linkPlanilha.href = dados.grupo.urlPlanilhaGrupo;
+    linkPlanilha.classList.remove('hidden');
+  } else {
+    linkPlanilha.classList.add('hidden');
+  }
+  loadState();
+}
+
+function handleLogout(){
+  usuarioAtual = null;
+  state = { days: 0, x: [], y: [] };
+  loaded = false;
+  document.getElementById('tela-dashboard').classList.add('hidden');
+  document.getElementById('tela-auth').classList.remove('hidden');
+  document.getElementById('form-login').reset();
+  mostrarTelaAuth('login');
+}
+
+async function handleLogin(event){
+  event.preventDefault();
+  const btn = document.getElementById('login-btn');
+  const email = document.getElementById('login-email').value.trim();
+  const senha = document.getElementById('login-senha').value;
+  esconderMensagemAuth();
+  definirCarregando(btn, true, 'Entrar');
+  try{
+    const resposta = await chamarAPI({ action:'autenticarUsuario', email:email, senha:senha });
+    if(!resposta.sucesso){ mostrarMensagemAuth(resposta.erro || 'Não foi possível entrar.', false); return; }
+    mostrarDashboard(resposta.dados);
+  }catch(erro){
+    console.error(erro);
+    mostrarMensagemAuth('Erro de conexão. Verifique a URL da API (API_URL) e sua internet.', false);
+  }finally{
+    definirCarregando(btn, false, 'Entrar');
+  }
+}
+
+async function handleCadastro(event){
+  event.preventDefault();
+  const btn = document.getElementById('cadastro-btn');
+  const textoOriginal = 'Criar conta e gerar planilha do grupo';
+  const nome = document.getElementById('cadastro-nome').value.trim();
+  const email = document.getElementById('cadastro-email').value.trim();
+  const nomeGrupo = document.getElementById('cadastro-grupo').value.trim();
+  const senha = document.getElementById('cadastro-senha').value;
+  const senhaConfirma = document.getElementById('cadastro-senha-confirma').value;
+  esconderMensagemAuth();
+
+  if(senha !== senhaConfirma){ mostrarMensagemAuth('As senhas não coincidem.', false); return; }
+  if(senha.length < 6){ mostrarMensagemAuth('A senha deve ter pelo menos 6 caracteres.', false); return; }
+
+  definirCarregando(btn, true, textoOriginal);
+  try{
+    const resposta = await chamarAPI({ action:'cadastrarUsuario', dados:{ nome:nome, email:email, senha:senha, nomeGrupo:nomeGrupo } });
+    if(!resposta.sucesso){ mostrarMensagemAuth(resposta.erro || 'Não foi possível cadastrar.', false); return; }
+    mostrarDashboard(resposta.dados);
+  }catch(erro){
+    console.error(erro);
+    mostrarMensagemAuth('Erro de conexão. Verifique a URL da API (API_URL) e sua internet.', false);
+  }finally{
+    definirCarregando(btn, false, textoOriginal);
+  }
+}
+
+async function handleEsqueciSenha(event){
+  event.preventDefault();
+  const btn = document.getElementById('esqueci-btn');
+  const email = document.getElementById('esqueci-email').value.trim();
+  esconderMensagemAuth();
+  definirCarregando(btn, true, 'Enviar código');
+  try{
+    const resposta = await chamarAPI({ action:'recuperarSenha', email:email });
+    if(!resposta.sucesso){ mostrarMensagemAuth(resposta.erro || 'Não foi possível processar o pedido.', false); return; }
+    emailRecuperacaoAtual = email;
+    mostrarTelaAuth('redefinir');
+    mostrarMensagemAuth('Se o e-mail existir em nossa base, um código de 6 dígitos foi enviado. Confira sua caixa de entrada.', true);
+  }catch(erro){
+    console.error(erro);
+    mostrarMensagemAuth('Erro de conexão. Verifique a URL da API (API_URL) e sua internet.', false);
+  }finally{
+    definirCarregando(btn, false, 'Enviar código');
+  }
+}
+
+async function handleRedefinirSenha(event){
+  event.preventDefault();
+  const btn = document.getElementById('redefinir-btn');
+  const codigo = document.getElementById('redefinir-codigo').value.trim();
+  const novaSenha = document.getElementById('redefinir-senha').value;
+  esconderMensagemAuth();
+
+  if(novaSenha.length < 6){ mostrarMensagemAuth('A nova senha deve ter pelo menos 6 caracteres.', false); return; }
+
+  definirCarregando(btn, true, 'Redefinir senha');
+  try{
+    const resposta = await chamarAPI({ action:'redefinirSenha', email:emailRecuperacaoAtual, codigo:codigo, novaSenha:novaSenha });
+    if(!resposta.sucesso){ mostrarMensagemAuth(resposta.erro || 'Não foi possível redefinir a senha.', false); return; }
+    document.getElementById('form-redefinir').reset();
+    document.getElementById('login-email').value = emailRecuperacaoAtual;
+    mostrarTelaAuth('login');
+    mostrarMensagemAuth('Senha redefinida com sucesso! Faça login com sua nova senha.', true);
+  }catch(erro){
+    console.error(erro);
+    mostrarMensagemAuth('Erro de conexão. Verifique a URL da API (API_URL) e sua internet.', false);
+  }finally{
+    definirCarregando(btn, false, 'Redefinir senha');
+  }
+}
+
+let state = { days: 0, x: [], y: [] };
+let loaded = false;
+let pendingImport = null;
+let pendingDayMode = 'new';
+
+// rascunho (não salvo) do formulário de lançamento do dia
+let draft = { x:{}, y:{} };
+let draftNew = { x:[], y:[] };
+
+function scoreTag(v){
+  const n = v ?? 0;
+  return n >= 0 ? `+${n}` : `${n}`;
+}
+
+function ptsTag(v){
+  const abs = Math.abs(v);
+  return `${v} ${abs === 1 ? 'pt' : 'pts'}`;
+}
+
+function rankDivisionForDay(div, dayIdx){
+  const list = state[div].filter(p => p.scores[dayIdx] !== null && p.scores[dayIdx] !== undefined);
+  list.sort((a,b)=>{
+    const av = a.scores[dayIdx] ?? 0;
+    const bv = b.scores[dayIdx] ?? 0;
+    if(bv !== av) return bv - av;
+    return a.name.localeCompare(b.name, 'pt-BR');
+  });
+  return list;
+}
+
+function buildDivisionBlock(title, range, emoji, entries, formatFn){
+  const bar = '━━━━━━━━━━━━━━━━━━';
+  let out = `${bar} \n${emoji} ${title} • ${range} \n${bar}\n`;
+  out += entries.map((e, i) => `${i+1}° ${e.name} — ${formatFn(e)}`).join('\n');
+  return out;
+}
+
+function populateDaySelect(){
+  const sel = document.getElementById('summary-day');
+  const prev = sel.value;
+  sel.innerHTML = '';
+  for(let d = 0; d < state.days; d++){
+    const opt = document.createElement('option');
+    opt.value = d;
+    opt.textContent = `Dia ${d+1}`;
+    sel.appendChild(opt);
+  }
+  if(state.days > 0) sel.value = state.days - 1;
+}
+
+function generateSummary(){
+  const out = document.getElementById('summary-output');
+  if(state.days === 0){ out.value = ''; return; }
+  const dayIdx = parseInt(document.getElementById('summary-day').value, 10);
+
+  const xDay = rankDivisionForDay('x', dayIdx);
+  const yDay = rankDivisionForDay('y', dayIdx);
+  const xAcc = sortDivision('x');
+  const yAcc = sortDivision('y');
+
+  let text = `🏆 RANKING DIA ${dayIdx+1}\n`;
+  text += buildDivisionBlock('FAIXA X', '0 ~ 19.999M', '📗', xDay, e => scoreTag(e.scores[dayIdx]));
+  text += '\n';
+  text += buildDivisionBlock('FAIXA Y', '20M ~ ∞', '📘', yDay, e => scoreTag(e.scores[dayIdx]));
+  text += '\n🏆 RANKING ACUMULADO\n';
+  text += buildDivisionBlock('FAIXA X', '0 ~ 19.999M', '📗', xAcc, e => ptsTag(e.total));
+  text += '\n';
+  text += buildDivisionBlock('FAIXA Y', '20M ~ ∞', '📘', yAcc, e => ptsTag(e.total));
+
+  out.value = text;
+}
+
+function copySummary(){
+  const el = document.getElementById('summary-output');
+  if(!el.value){ generateSummary(); }
+  if(!el.value) return;
+  el.select();
+  const btn = document.getElementById('copy-btn');
+  const finish = () => {
+    const old = btn.textContent;
+    btn.textContent = 'Copiado!';
+    btn.classList.add('copy-flash');
+    setTimeout(()=>{ btn.textContent = old; btn.classList.remove('copy-flash'); }, 1500);
+  };
+  if(navigator.clipboard && navigator.clipboard.writeText){
+    navigator.clipboard.writeText(el.value).then(finish).catch(()=>{ document.execCommand('copy'); finish(); });
+  } else {
+    document.execCommand('copy'); finish();
+  }
+}
+
+function findDivision(name){
+  const norm = name.toLowerCase();
+  if(state.x.some(p=>p.name.toLowerCase()===norm)) return 'x';
+  if(state.y.some(p=>p.name.toLowerCase()===norm)) return 'y';
+  return null;
+}
+
+function processPaste(){
+  const text = document.getElementById('paste-area').value;
+  // aceita "Nome, Pontuação;" separado por ; ou por linha, e também o formato
+  // antigo "Nome Pontuação" (um por linha, sem vírgula) para compatibilidade
+  const chunks = text.split(/[;\n]+/).map(s=>s.trim()).filter(Boolean);
+  const parsed = [];
+  const skipped = [];
+  for(const chunk of chunks){
+    let m = chunk.match(/^(.+),\s*(-?\d+(?:[.,]\d+)?)\s*$/);
+    if(!m) m = chunk.match(/^(.+?)[\s\t]+(-?\d+(?:[.,]\d+)?)\s*$/);
+    if(!m){ skipped.push(chunk); continue; }
+    const value = parseFloat(m[2].replace(',', '.'));
+    if(isNaN(value)){ skipped.push(chunk); continue; }
+    parsed.push({ name: m[1].trim(), value: Math.min(value, 10) });
+  }
+  if(!parsed.length){
+    alert('Não consegui ler nenhum participante. Use o formato: Nome, Pontuação; um por ponto e vírgula ou por linha.');
+    return;
+  }
+  pendingImport = parsed.map(e=>{
+    const known = findDivision(e.name);
+    return { ...e, knownDiv: known, div: known || 'x' };
+  });
+  pendingDayMode = 'new';
+  renderPending();
+  if(skipped.length){
+    console.warn('Linhas não reconhecidas na colagem:', skipped);
+  }
+}
+
+function populatePendingDaySelect(){
+  const sel = document.getElementById('pending-day-select');
+  if(!sel) return;
+  let opts = `<option value="new">Novo dia (Dia ${state.days + 1})</option>`;
+  for(let d = state.days - 1; d >= 0; d--){
+    opts += `<option value="${d}">Dia ${d+1} (substituir)</option>`;
+  }
+  sel.innerHTML = opts;
+  sel.value = pendingDayMode === 'new' ? 'new' : String(pendingDayMode);
+  sel.onchange = () => {
+    pendingDayMode = sel.value === 'new' ? 'new' : parseInt(sel.value, 10);
+  };
+}
+
+function applyBulkDiv(value){
+  if(!value || !pendingImport) return;
+  pendingImport.forEach(e => e.div = value);
+  renderPending();
+  document.getElementById('pending-bulk-div').value = value;
+}
+
+function renderPending(){
+  const panel = document.getElementById('pending-panel');
+  const list = document.getElementById('pending-list');
+  if(!pendingImport || !pendingImport.length){ panel.style.display='none'; return; }
+  panel.style.display = 'block';
+  populatePendingDaySelect();
+  list.innerHTML = pendingImport.map((e, i)=>{
+    const valClass = e.value < 0 ? 'val-neg' : e.value > 0 ? 'val-pos' : '';
+    const tag = e.knownDiv
+      ? `<span class="tag-known">já em Faixa ${e.knownDiv.toUpperCase()}</span>`
+      : `<span class="tag-known" style="color:var(--y-color);">novo</span>`;
+    return `<div class="pending-row">
+      <span class="pname">${e.name}</span>
+      <span class="pval ${valClass}">${scoreTag(e.value)}</span>
+      ${tag}
+      <select onchange="pendingImport[${i}].div=this.value">
+        <option value="x" ${e.div==='x'?'selected':''}>Faixa X</option>
+        <option value="y" ${e.div==='y'?'selected':''}>Faixa Y</option>
+      </select>
+    </div>`;
+  }).join('');
+}
+
+function cancelImport(){
+  pendingImport = null;
+  pendingDayMode = 'new';
+  document.getElementById('pending-panel').style.display = 'none';
+}
+
+function confirmImport(){
+  if(!pendingImport || !pendingImport.length) return;
+
+  let dayIdx;
+  if(pendingDayMode === 'new'){
+    state.days += 1;
+    state.x.forEach(p=>p.scores.push(null));
+    state.y.forEach(p=>p.scores.push(null));
+    dayIdx = state.days - 1;
+  } else {
+    dayIdx = pendingDayMode;
+  }
+
+  pendingImport.forEach(e=>{
+    const div = e.div || 'x';
+    const list = state[div];
+    let p = list.find(pp => pp.name.toLowerCase() === e.name.toLowerCase());
+    if(!p){
+      p = { name: e.name, scores: Array(state.days).fill(null) };
+      list.push(p);
+    }
+    p.scores[dayIdx] = e.value;
+  });
+
+  pendingImport = null;
+  pendingDayMode = 'new';
+  document.getElementById('pending-panel').style.display = 'none';
+  document.getElementById('paste-area').value = '';
+  switchLaunchTab('form');
+  saveState(); render();
+}
+
+
+/* ======================================================================
+   ARMAZENAMENTO NA PLANILHA DO GRUPO (Google Apps Script)
+   Cada grupo lê/grava os dados de ranking na sua própria Planilha Google,
+   criada automaticamente no cadastro. Nada fica salvo no navegador.
+   ====================================================================== */
+
+function setStatus(text, ok){
+  const el = document.getElementById('sync-status');
+  if(el) el.textContent = text;
+  const dot = document.getElementById('status-dot');
+  if(dot) dot.style.background = ok === false ? 'var(--neg)' : (ok === 'busy' ? 'var(--y-color)' : 'var(--x-color)');
+}
+
+async function loadState(){
+  if(!usuarioAtual || !usuarioAtual.grupo) return;
+  setStatus('carregando dados do grupo...', 'busy');
+  try{
+    const resposta = await chamarAPIGet({ action:'listarRanking', idPlanilhaGrupo: usuarioAtual.grupo.idPlanilhaGrupo });
+    if(!resposta.sucesso) throw new Error(resposta.erro || 'Falha ao carregar');
+    const carregado = resposta.dados;
+    if(carregado && typeof carregado.days === "number" && Array.isArray(carregado.x) && Array.isArray(carregado.y)){
+      state = carregado;
+    } else {
+      state = { days: 0, x: [], y: [] };
+    }
+    setStatus('sincronizado ✓', true);
+  }catch(e){
+    console.error("Erro ao carregar dados do grupo", e);
+    state = { days: 0, x: [], y: [] };
+    setStatus('erro ao carregar — recarregue a página para tentar de novo', false);
+  }
+  loaded = true;
+  render();
+}
+
+let saveTimeout = null;
+function saveState(){
+  if(!usuarioAtual) return;
+  clearTimeout(saveTimeout);
+  saveTimeout = setTimeout(syncToServer, 900);
+}
+
+async function syncToServer(){
+  if(!usuarioAtual || !usuarioAtual.grupo) return;
+  setStatus('salvando...', 'busy');
+  try{
+    const resposta = await chamarAPI({ action:'salvarRanking', idPlanilhaGrupo: usuarioAtual.grupo.idPlanilhaGrupo, estado: state });
+    if(!resposta.sucesso) throw new Error(resposta.erro || 'Falha ao salvar');
+    setStatus('sincronizado ✓', true);
+  }catch(e){
+    console.error("Erro ao salvar no servidor", e);
+    setStatus('erro ao sincronizar — suas últimas alterações podem não ter sido salvas', false);
+  }
+}
+
+function addParticipant(div){
+  const name = prompt('Nome do participante:');
+  if(!name) return;
+  const list = state[div];
+  list.push({ name: name.trim(), scores: Array(state.days).fill(null) });
+  saveState(); render();
+}
+
+function removeParticipant(div, idx){
+  state[div].splice(idx,1);
+  saveState(); render();
+}
+
+function renameParticipant(div, idx){
+  const current = state[div][idx].name;
+  const name = prompt('Novo nome:', current);
+  if(!name || !name.trim() || name.trim() === current) return;
+  state[div][idx].name = name.trim();
+  saveState(); render();
+}
+
+function addDay(){
+  state.days += 1;
+  state.x.forEach(p=>p.scores.push(null));
+  state.y.forEach(p=>p.scores.push(null));
+  saveState(); render();
+}
+
+function removeLastDay(){
+  if(state.days === 0) return;
+  state.days -= 1;
+  state.x.forEach(p=>p.scores.pop());
+  state.y.forEach(p=>p.scores.pop());
+  saveState(); render();
+}
+
+function resetAll(){
+  if(!confirm('Apagar todos os participantes e dias?')) return;
+  state = { days: 0, x: [], y: [] };
+  saveState(); render();
+}
+
+function updateScore(div, idx, dayIdx, value){
+  let v = value.trim();
+  let num = v === '' ? null : parseFloat(v);
+  if(num !== null && isNaN(num)) num = null;
+  if(num !== null && num > 10) num = 10; // ganho máximo diário
+  state[div][idx].scores[dayIdx] = num;
+  saveState();
+  renderDivision(div); // re-sort without full redraw of inputs elsewhere
+}
+
+function total(p){
+  return p.scores.reduce((s,v)=> s + (v ?? 0), 0);
+}
+
+// devolve o índice do dia (mais recente -> mais antigo) que decide o empate, ou null se total já difere ou segue empatado
+function tiebreakDay(a,b){
+  for(let d=state.days-1; d>=0; d--){
+    const av = a.scores[d] ?? 0;
+    const bv = b.scores[d] ?? 0;
+    if(av !== bv) return d;
+  }
+  return null;
+}
+
+function sortDivision(div){
+  const list = state[div].map((p,i)=>({...p, idx:i, total: total(p)}));
+  list.sort((a,b)=>{
+    if(b.total !== a.total) return b.total - a.total;
+    const d = tiebreakDay(a,b);
+    if(d === null) return 0;
+    return (b.scores[d] ?? 0) - (a.scores[d] ?? 0);
+  });
+  return list;
+}
+
+function renderDivision(div){
+  const head = document.getElementById('head-'+div);
+  const body = document.getElementById('body-'+div);
+  const empty = document.getElementById('empty-'+div);
+
+  let headHtml = '<th class="rank-h">#</th><th class="name-h" style="text-align:left;">Nome</th>';
+  for(let d=0; d<state.days; d++) headHtml += `<th>D${d+1}</th>`;
+  headHtml += '<th>Total</th><th></th>';
+  head.innerHTML = headHtml;
+
+  const sorted = sortDivision(div);
+  empty.style.display = sorted.length ? 'none' : 'block';
+
+  body.innerHTML = sorted.map((p, rank)=>{
+    const rankClass = rank===0?'top1':rank===1?'top2':rank===2?'top3':'';
+    let cells = '';
+    for(let d=0; d<state.days; d++){
+      const val = p.scores[d];
+      const cls = val === null ? '' : (val < 0 ? 'val-neg' : val > 0 ? 'val-pos' : '');
+      cells += `<td><input class="score ${cls}" type="text" inputmode="numeric" pattern="-?[0-9]*"
+        value="${val === null ? '' : val}"
+        onchange="updateScore('${div}', ${p.idx}, ${d}, this.value)"></td>`;
+    }
+    let tieTag = '';
+    if(rank < sorted.length - 1){
+      const next = sorted[rank+1];
+      if(next.total === p.total){
+        const d = tiebreakDay(p, next);
+        if(d !== null) tieTag = `<span class="tiebadge">desempate D${d+1}</span>`;
+      }
+    }
+    return `<tr class="${rankClass}">
+      <td class="rank">${rank+1}</td>
+      <td class="name">${p.name}${tieTag}</td>
+      ${cells}
+      <td class="total">${p.total}</td>
+      <td><div class="row-btns">
+        <button class="del-x-btn" onclick="renameParticipant('${div}', ${p.idx})" title="Renomear">✎</button>
+        <button class="del-x-btn" onclick="removeParticipant('${div}', ${p.idx})" title="Remover">✕</button>
+      </div></td>
+    </tr>`;
+  }).join('');
+}
+
+/* ---------------------------------------------------------------------
+   Formulário de lançamento do dia (aba "Preencher")
+   --------------------------------------------------------------------- */
+
+function switchLaunchTab(tab){
+  const formView = document.getElementById('launch-view-form');
+  const pasteView = document.getElementById('launch-view-paste');
+  const tabForm = document.getElementById('tab-form');
+  const tabPaste = document.getElementById('tab-paste');
+  if(tab === 'paste'){
+    formView.style.display = 'none';
+    pasteView.style.display = '';
+    tabForm.classList.remove('active');
+    tabPaste.classList.add('active');
+  } else {
+    formView.style.display = '';
+    pasteView.style.display = 'none';
+    tabForm.classList.add('active');
+    tabPaste.classList.remove('active');
+  }
+}
+
+function updateLaunchDayLabel(){
+  const el = document.getElementById('launch-day-label');
+  if(el) el.textContent = `Dia ${state.days + 1}`;
+}
+
+function styleLaunchInput(el){
+  el.classList.remove('val-pos','val-neg');
+  const v = parseFloat(String(el.value).replace(',', '.'));
+  if(!isNaN(v)){
+    if(v > 0) el.classList.add('val-pos');
+    else if(v < 0) el.classList.add('val-neg');
+  }
+}
+
+function focusNextLaunch(el){
+  const all = Array.from(document.querySelectorAll('#launch-view-form input'));
+  const idx = all.indexOf(el);
+  if(idx > -1 && idx < all.length - 1) all[idx+1].focus();
+  else el.blur();
+}
+
+function updateLaunchProgress(){
+  let filled = 0, totalCount = 0;
+  ['x','y'].forEach(div=>{
+    state[div].forEach((p,i)=>{
+      totalCount++;
+      if(draft[div][i] !== undefined && draft[div][i] !== '') filled++;
+    });
+    draftNew[div].forEach(r=>{
+      if(r.name.trim()){ totalCount++; if(r.value !== '') filled++; }
+    });
+    const countEl = document.getElementById('launch-count-'+div);
+    if(countEl) countEl.textContent = `${state[div].length} cadastrado${state[div].length===1?'':'s'}`;
+  });
+  const el = document.getElementById('launch-progress');
+  if(el){
+    el.textContent = totalCount
+      ? `${filled} de ${totalCount} preenchidos`
+      : 'Nenhum participante cadastrado ainda — use "+ novo participante"';
+  }
+}
+
+function renderDraftNewRows(div){
+  const wrap = document.getElementById('launch-new-'+div);
+  if(!wrap) return;
+  wrap.innerHTML = draftNew[div].map((row,i)=>`
+    <div class="launch-row launch-row-new">
+      <input class="launch-name-input" type="text" placeholder="Novo participante"
+        value="${row.name}" oninput="draftNew.${div}[${i}].name=this.value; updateLaunchProgress();">
+      <input class="launch-input" type="text" inputmode="numeric" pattern="-?[0-9]*" placeholder="pts"
+        value="${row.value}"
+        oninput="draftNew.${div}[${i}].value=this.value; styleLaunchInput(this); updateLaunchProgress();"
+        onkeydown="if(event.key==='Enter'){event.preventDefault(); focusNextLaunch(this);}">
+      <button type="button" class="del-x-btn" onclick="removeDraftRow('${div}', ${i})" title="Remover">✕</button>
+    </div>
+  `).join('');
+}
+
+function addDraftRow(div){
+  draftNew[div].push({ name:'', value:'' });
+  renderDraftNewRows(div);
+  updateLaunchProgress();
+  requestAnimationFrame(()=>{
+    const wrap = document.getElementById('launch-new-'+div);
+    const inputs = wrap ? wrap.querySelectorAll('.launch-name-input') : [];
+    if(inputs.length) inputs[inputs.length-1].focus();
+  });
+}
+
+function removeDraftRow(div, idx){
+  draftNew[div].splice(idx,1);
+  renderDraftNewRows(div);
+  updateLaunchProgress();
+}
+
+function renderLaunchForm(){
+  draft = { x:{}, y:{} };
+  draftNew = { x:[], y:[] };
+  ['x','y'].forEach(div=>{
+    const listEl = document.getElementById('launch-list-'+div);
+    if(!listEl) return;
+    listEl.innerHTML = state[div].length
+      ? state[div].map((p,i)=>`
+        <div class="launch-row">
+          <span class="launch-name">${p.name}</span>
+          <input class="launch-input" type="text" inputmode="numeric" pattern="-?[0-9]*" placeholder="—"
+            oninput="draft.${div}[${i}]=this.value; styleLaunchInput(this); updateLaunchProgress();"
+            onkeydown="if(event.key==='Enter'){event.preventDefault(); focusNextLaunch(this);}"
+            onfocus="this.select()">
+        </div>
+      `).join('')
+      : '<div class="empty-hint" style="padding:8px 0;">Nenhum participante ainda.</div>';
+    renderDraftNewRows(div);
+  });
+  updateLaunchDayLabel();
+  updateLaunchProgress();
+}
+
+function launchDayForm(){
+  let hasAny = false;
+  ['x','y'].forEach(div=>{
+    if(Object.values(draft[div]).some(v => v !== undefined && v !== '')) hasAny = true;
+    if(draftNew[div].some(r => r.name.trim() && r.value !== '')) hasAny = true;
+  });
+  if(!hasAny){ alert('Preencha ao menos uma pontuação antes de lançar o dia.'); return; }
+
+  state.days += 1;
+  state.x.forEach(p=>p.scores.push(null));
+  state.y.forEach(p=>p.scores.push(null));
+  const newIdx = state.days - 1;
+
+  ['x','y'].forEach(div=>{
+    state[div].forEach((p,i)=>{
+      const raw = draft[div][i];
+      if(raw === undefined || raw === '') return;
+      let num = parseFloat(String(raw).replace(',', '.'));
+      if(isNaN(num)) return;
+      if(num > 10) num = 10;
+      p.scores[newIdx] = num;
+    });
+    draftNew[div].forEach(row=>{
+      const name = row.name.trim();
+      if(!name || row.value === '') return;
+      let num = parseFloat(String(row.value).replace(',', '.'));
+      if(isNaN(num)) return;
+      if(num > 10) num = 10;
+      let p = state[div].find(pp => pp.name.toLowerCase() === name.toLowerCase());
+      if(!p){
+        p = { name, scores: Array(state.days).fill(null) };
+        state[div].push(p);
+      }
+      p.scores[newIdx] = num;
+    });
+  });
+
+  saveState();
+  render();
+}
+
+function render(){
+  if(!loaded) return;
+  renderDivision('x');
+  renderDivision('y');
+  populateDaySelect();
+  renderLaunchForm();
+  bindDragScroll();
+  generateSummary();
+}
+
+function enableDragScroll(el){
+  if(!el || el.dataset.dragBound) return;
+  el.dataset.dragBound = '1';
+  let isDown = false, startX = 0, startScroll = 0;
+  el.addEventListener('mousedown', (e)=>{
+    isDown = true;
+    el.classList.add('dragging');
+    startX = e.pageX;
+    startScroll = el.scrollLeft;
+  });
+  window.addEventListener('mouseup', ()=>{ isDown = false; el.classList.remove('dragging'); });
+  window.addEventListener('mousemove', (e)=>{
+    if(!isDown) return;
+    e.preventDefault();
+    el.scrollLeft = startScroll - (e.pageX - startX);
+  });
+}
+
+function bindDragScroll(){
+  document.querySelectorAll('.table-wrap').forEach(enableDragScroll);
+}
+
+window.addEventListener('beforeunload',saveState);
+window.addEventListener('pagehide',saveState);
+window.addEventListener('blur',saveState);
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden')saveState();});
+</script>
 </body>
 </html>
